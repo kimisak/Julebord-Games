@@ -8,13 +8,16 @@ type Props = {
   currentTeamName?: string;
   answeringTeamName?: string;
   mapLocked: boolean;
-  setMapLocked: (v: boolean) => void;
+  onToggleLock: () => void;
   onClose: () => void;
   onRevealAnswer: () => void;
   showAnswer: boolean;
   onCorrect: () => void;
   onWrong: () => void;
   disableActions?: boolean;
+  countdownSeconds?: number | null;
+  flashKey?: number;
+  timerUsed?: boolean;
 };
 
 export function GeoguesserModal({
@@ -22,25 +25,31 @@ export function GeoguesserModal({
   currentTeamName,
   answeringTeamName,
   mapLocked,
-  setMapLocked,
+  onToggleLock,
   onClose,
   onRevealAnswer,
   showAnswer,
   onCorrect,
   onWrong,
   disableActions,
+  countdownSeconds,
+  flashKey,
+  timerUsed,
 }: Props) {
+  const lockDisabled = timerUsed ? true : !mapLocked && countdownSeconds !== null;
+
   return (
-    <div
-      className={`flip-inner ${showAnswer ? "flipped" : ""}`}
-      style={{
-        position: "relative",
-        width: "100%",
-        minHeight: "360px",
-        transformStyle: "preserve-3d",
-        transition: "transform 0.5s ease",
-      }}
-    >
+    <>
+      <div
+        className={`flip-inner ${showAnswer ? "flipped" : ""}`}
+        style={{
+          position: "relative",
+          width: "100%",
+          minHeight: "360px",
+          transformStyle: "preserve-3d",
+          transition: "transform 0.5s ease",
+        }}
+      >
       <div
         style={{
           position: "absolute",
@@ -54,6 +63,8 @@ export function GeoguesserModal({
             padding: "22px",
             background: "rgba(10, 12, 18, 0.96)",
             borderColor: "rgba(255,255,255,0.18)",
+            position: "relative",
+            overflow: "hidden",
           }}
         >
           <div
@@ -62,6 +73,8 @@ export function GeoguesserModal({
               justifyContent: "space-between",
               alignItems: "center",
               marginBottom: "12px",
+              position: "relative",
+              zIndex: 1,
             }}
           >
             <div>
@@ -79,17 +92,36 @@ export function GeoguesserModal({
                 {question.points} pts
               </div>
               {answeringTeamName && (
-                <div style={{ color: "var(--muted)", marginTop: "2px", fontSize: "0.95rem" }}>
+                <div
+                  style={{
+                    color: "var(--muted)",
+                    marginTop: "2px",
+                    fontSize: "0.95rem",
+                  }}
+                >
                   Answering: <strong style={{ color: "#81e6d9" }}>{answeringTeamName}</strong>
                 </div>
               )}
             </div>
             {question.mapEmbedUrl && (
-              <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+              <div style={{ display: "flex", gap: "10px", alignItems: "center", flexWrap: "wrap" }}>
                 <div style={{ color: "var(--muted)", fontSize: "0.95rem" }}>
-                  Map is {mapLocked ? "locked (view only)" : "unlocked (can move)"}
+                  {mapLocked ? "Map locked (view only)" : "Map unlocked · move now"}
+                  {!mapLocked && countdownSeconds !== null && (
+                    <strong style={{ color: "#f7c948", marginLeft: "8px" }}>
+                      {countdownSeconds}s
+                    </strong>
+                  )}
                 </div>
-                <button className="button ghost" onClick={() => setMapLocked(!mapLocked)}>
+                <button
+                  className="button ghost"
+                  onClick={onToggleLock}
+                  disabled={lockDisabled}
+                  style={{
+                    opacity: lockDisabled ? 0.7 : 1,
+                    cursor: lockDisabled ? "not-allowed" : "pointer",
+                  }}
+                >
                   {mapLocked ? "Unlock map" : "Lock map"}
                 </button>
               </div>
@@ -100,29 +132,40 @@ export function GeoguesserModal({
               {question.prompt}
             </div>
           )}
-          {question.mapEmbedUrl ? (
+              {question.mapEmbedUrl ? (
             <div
               style={{
                 position: "relative",
                 borderRadius: "14px",
-                overflow: "hidden",
-                border: "1px solid rgba(255,255,255,0.12)",
-                background: "rgba(255,255,255,0.04)",
+                overflow: "visible",
                 height: "420px",
+                boxShadow: "0 10px 28px rgba(0,0,0,0.35)",
+                zIndex: 1,
               }}
             >
-              <iframe
-                src={question.mapEmbedUrl}
+              <div
                 style={{
-                  width: "100%",
-                  height: "900px",
-                  border: "0",
-                  marginTop: "-220px",
-                  pointerEvents: mapLocked ? "none" : "auto",
+                  position: "absolute",
+                  inset: 0,
+                  overflow: "hidden",
+                  borderRadius: "14px",
+                  border: "1px solid rgba(255,255,255,0.05)",
+                  background: "rgba(255,255,255,0.015)",
                 }}
-                allowFullScreen
-                loading="lazy"
-              />
+              >
+                <iframe
+                  src={question.mapEmbedUrl}
+                  style={{
+                    width: "100%",
+                    height: "900px",
+                    border: "0",
+                    marginTop: "-220px",
+                    pointerEvents: mapLocked ? "none" : "auto",
+                  }}
+                  allowFullScreen
+                  loading="lazy"
+                />
+              </div>
             </div>
           ) : (
             <div
@@ -169,6 +212,7 @@ export function GeoguesserModal({
             padding: "22px",
             background: "rgba(10, 14, 19, 0.96)",
             borderColor: "rgba(255,255,255,0.2)",
+            position: "relative",
           }}
         >
           <div
@@ -318,6 +362,20 @@ export function GeoguesserModal({
           </div>
         </div>
       </div>
-    </div>
+      </div>
+      <style jsx>{`
+        @keyframes shadowFlash {
+          0% {
+            box-shadow: 0 0 0 12px rgba(255, 255, 255, 0.55), 0 0 36px 18px rgba(255, 255, 255, 0.45);
+          }
+          60% {
+            box-shadow: 0 0 20px 6px rgba(255, 255, 255, 0.2);
+          }
+          100% {
+            box-shadow: 0 0 20px 6px rgba(255, 255, 255, 0);
+          }
+        }
+      `}</style>
+    </>
   );
 }

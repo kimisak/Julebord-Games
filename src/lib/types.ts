@@ -33,6 +33,7 @@ export type Question = {
   answerLocationLabel?: string | null;
   answerLocationUrl?: string | null;
   answerVideoUrl?: string | null;
+  geoTimerSeconds?: number | null;
   lyricsRedPattern?: number[];
 };
 

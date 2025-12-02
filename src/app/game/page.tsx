@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { BoardGrid } from "@/components/game/BoardGrid";
 import { Leaderboard } from "@/components/game/Leaderboard";
 import { GeoguesserModal } from "@/components/game/modals/GeoguesserModal";
@@ -15,7 +15,7 @@ import { type Question, type Team } from "@/lib/types";
 
 type ActiveQuestion = Question & { category: string };
 export default function GameBoardPage() {
-  const { playSadBlip } = useAudioCue();
+  const { playSadBlip, playCountdownBeep, playFinalAlarm } = useAudioCue();
   const [teams, setTeams] = usePersistentState<Team[]>(TEAM_STORAGE_KEY, []);
   const [questions, setQuestions] = usePersistentState<Question[]>(
     QUESTION_STORAGE_KEY,
@@ -30,6 +30,9 @@ export default function GameBoardPage() {
   const [selectedTeamId, setSelectedTeamId] = useState<string>("");
   const [lastGuessTeamId, setLastGuessTeamId] = useState<string>("");
   const [mapLocked, setMapLocked] = useState(true);
+  const [geoCountdown, setGeoCountdown] = useState<number | null>(null);
+  const [geoTimerUsed, setGeoTimerUsed] = useState(false);
+  const prevAnsweringTeamRef = useRef<string | null>(null);
 
   const { turnState, setOrder, advanceBoard, advanceLyrics } = useTurnState();
   const turnOrder = turnState.order;
@@ -103,8 +106,15 @@ export default function GameBoardPage() {
       normalized = { ...question, lyricsRedPattern: pattern };
       setLyricsPattern(pattern);
     }
+    if (question.type === "geoguesser") {
+      const duration = question.geoTimerSeconds ?? 10;
+      normalized = { ...question, geoTimerSeconds: duration };
+    }
     setActiveQuestion(normalized);
     setShowAnswer(false);
+    setGeoTimerUsed(false);
+    setGeoCountdown(null);
+    setMapLocked(true);
     if (normalized.type === "lyrics") {
       const len = normalized.lyricsSegments?.length ?? 0;
       setLyricsRevealed(new Array(len).fill(false));
@@ -131,6 +141,8 @@ export default function GameBoardPage() {
     setLastGuessTeamId("");
     setMapLocked(true);
     setLyricsPattern([]);
+    setGeoCountdown(null);
+    setGeoTimerUsed(false);
   };
 
   const handleRevealLine = (idx: number) => {
@@ -151,6 +163,63 @@ export default function GameBoardPage() {
     if (isRedLyric(idx)) {
       playSadBlip();
       advanceLyrics();
+    }
+  };
+
+  useEffect(() => {
+    if (!activeQuestion || activeQuestion.type !== "geoguesser") return;
+    if (showAnswer) return;
+    if (mapLocked || geoCountdown === null) return;
+    if (geoCountdown <= 3 && geoCountdown > 0) {
+      playCountdownBeep(780 + geoCountdown * 80);
+    }
+    if (geoCountdown <= 0) return;
+    const id = setTimeout(() => {
+      setGeoCountdown((prev) => (prev !== null ? prev - 1 : prev));
+    }, 1000);
+    return () => clearTimeout(id);
+  }, [geoCountdown, mapLocked, activeQuestion]);
+
+  useEffect(() => {
+    if (!activeQuestion || activeQuestion.type !== "geoguesser") return;
+    if (mapLocked || showAnswer) return;
+    if (geoCountdown === 0) {
+      playFinalAlarm();
+    }
+    if (geoCountdown === 0) {
+      setMapLocked(true);
+      setGeoCountdown(null);
+    }
+  }, [geoCountdown, mapLocked, activeQuestion, activeTurnOrder, boardTurnIndex, advanceBoard]);
+
+  useEffect(() => {
+    // reset tracking when question changes
+    prevAnsweringTeamRef.current = answeringTeamId ?? null;
+    setGeoTimerUsed(false);
+    setGeoCountdown(null);
+    setMapLocked(true);
+  }, [activeQuestion?.id]);
+
+  useEffect(() => {
+    if (!activeQuestion) return;
+    if (activeQuestion.type === "geoguesser" && showAnswer) {
+      setGeoCountdown(null);
+      setMapLocked(true);
+    }
+    prevAnsweringTeamRef.current = answeringTeamId ?? null;
+  }, [answeringTeamId, activeQuestion?.id, activeQuestion?.type, showAnswer]);
+
+  const toggleGeoLock = () => {
+    if (!activeQuestion || activeQuestion.type !== "geoguesser") return;
+    if (geoTimerUsed && mapLocked) return;
+    if (mapLocked) {
+      const duration = activeQuestion.geoTimerSeconds ?? 10;
+      setGeoTimerUsed(true);
+      setGeoCountdown(duration);
+      setMapLocked(false);
+    } else {
+      setMapLocked(true);
+      setGeoCountdown(null);
     }
   };
 
@@ -242,17 +311,19 @@ export default function GameBoardPage() {
           currentTeamName={currentTeam?.name}
           answeringTeamName={answeringTeam?.name}
           mapLocked={mapLocked}
-          setMapLocked={setMapLocked}
+          onToggleLock={toggleGeoLock}
           onClose={closeModal}
           onRevealAnswer={() => setShowAnswer(true)}
           showAnswer={showAnswer}
           onCorrect={() => markAnswered(true)}
           onWrong={() => markAnswered(false)}
           disableActions={!answeringTeam}
+          countdownSeconds={geoCountdown}
+          timerUsed={geoTimerUsed}
         />
       );
     }
-    return (
+  return (
       <StandardModal
         question={activeQuestion}
         teams={teams}
@@ -261,8 +332,6 @@ export default function GameBoardPage() {
         onClose={closeModal}
         onRevealAnswer={() => setShowAnswer(true)}
         showAnswer={showAnswer}
-        selectedTeamId={selectedTeamId}
-        setSelectedTeamId={setSelectedTeamId}
         onCorrect={() => markAnswered(true)}
         onWrong={() => markAnswered(false)}
         disableActions={!answeringTeam}

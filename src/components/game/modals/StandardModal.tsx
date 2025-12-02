@@ -10,11 +10,10 @@ type Props = {
   onClose: () => void;
   onRevealAnswer: () => void;
   showAnswer: boolean;
-  selectedTeamId: string;
-  setSelectedTeamId: (id: string) => void;
   onCorrect: () => void;
   onWrong: () => void;
   disableActions?: boolean;
+  flashKey?: number;
 };
 
 export function StandardModal({
@@ -25,46 +24,48 @@ export function StandardModal({
   onClose,
   onRevealAnswer,
   showAnswer,
-  selectedTeamId,
-  setSelectedTeamId,
   onCorrect,
   onWrong,
   disableActions,
+  flashKey,
 }: Props) {
   return (
-    <div
-      className={`flip-inner ${showAnswer ? "flipped" : ""}`}
-      style={{
-        position: "relative",
-        width: "100%",
-        minHeight: "360px",
-        transformStyle: "preserve-3d",
-        transition: "transform 0.5s ease",
-      }}
-    >
+    <>
       <div
+        className={`flip-inner ${showAnswer ? "flipped" : ""}`}
         style={{
-          position: "absolute",
-          inset: 0,
-          backfaceVisibility: "hidden",
+          position: "relative",
+          width: "100%",
+          minHeight: "360px",
+          transformStyle: "preserve-3d",
+          transition: "transform 0.5s ease",
         }}
       >
         <div
-          className="card"
           style={{
-            padding: "22px",
-            background: "rgba(10, 12, 18, 0.96)",
-            borderColor: "rgba(255,255,255,0.18)",
+            position: "absolute",
+            inset: 0,
+            backfaceVisibility: "hidden",
           }}
         >
           <div
+            className="card"
             style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              marginBottom: "12px",
+              padding: "22px",
+              background: "rgba(10, 12, 18, 0.96)",
+              borderColor: "rgba(255,255,255,0.18)",
+              position: "relative",
+              overflow: "hidden",
             }}
           >
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginBottom: "12px",
+              }}
+            >
             <div>
               <div
                 style={{
@@ -84,21 +85,6 @@ export function StandardModal({
                   Answering: <strong style={{ color: "#81e6d9" }}>{answeringTeamName}</strong>
                 </div>
               )}
-            </div>
-            <div style={{ minWidth: "240px" }}>
-              <label className="label">Answering team</label>
-              <select
-                value={selectedTeamId}
-                onChange={(e) => setSelectedTeamId(e.target.value)}
-                className="input"
-              >
-                <option value="">Select team answering</option>
-                {teams.map((team) => (
-                  <option key={team.id} value={team.id}>
-                    {team.name}
-                  </option>
-                ))}
-              </select>
             </div>
           </div>
           <div style={{ fontSize: "2.2rem", lineHeight: 1.35 }}>
@@ -249,6 +235,7 @@ export function StandardModal({
           </div>
         </div>
       </div>
-    </div>
+      </div>
+    </>
   );
 }

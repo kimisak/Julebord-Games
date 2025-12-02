@@ -19,6 +19,7 @@ type Props = {
   onWrong: () => void;
   disableActions?: boolean;
   onClose: () => void;
+  flashKey?: number;
 };
 
 export function LyricsModal({
@@ -37,41 +38,45 @@ export function LyricsModal({
   onWrong,
   disableActions,
   onClose,
+  flashKey,
 }: Props) {
   return (
-    <div
-      className={`flip-inner ${showAnswer ? "flipped" : ""}`}
-      style={{
-        position: "relative",
-        width: "100%",
-        minHeight: "360px",
-        transformStyle: "preserve-3d",
-        transition: "transform 0.5s ease",
-      }}
-    >
+    <>
       <div
+        className={`flip-inner ${showAnswer ? "flipped" : ""}`}
         style={{
-          position: "absolute",
-          inset: 0,
-          backfaceVisibility: "hidden",
+          position: "relative",
+          width: "100%",
+          minHeight: "360px",
+          transformStyle: "preserve-3d",
+          transition: "transform 0.5s ease",
         }}
       >
         <div
-          className="card"
           style={{
-            padding: "22px",
-            background: "rgba(10, 12, 18, 0.96)",
-            borderColor: "rgba(255,255,255,0.18)",
+            position: "absolute",
+            inset: 0,
+            backfaceVisibility: "hidden",
           }}
         >
           <div
+            className="card"
             style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              marginBottom: "12px",
+              padding: "22px",
+              background: "rgba(10, 12, 18, 0.96)",
+              borderColor: "rgba(255,255,255,0.18)",
+              position: "relative",
+              overflow: "hidden",
             }}
           >
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginBottom: "12px",
+              }}
+            >
             <div>
               <div
                 style={{
@@ -295,6 +300,7 @@ export function LyricsModal({
           </div>
         </div>
       </div>
-    </div>
+      </div>
+    </>
   );
 }

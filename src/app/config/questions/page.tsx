@@ -558,13 +558,15 @@ const GeoguesserFields = React.memo(function GeoguesserFields({
   const [mapUrl, setMapUrl] = useState(q?.mapEmbedUrl ?? "");
   const [answer, setAnswer] = useState(q?.answer ?? "");
   const [answerLink, setAnswerLink] = useState(q?.answerLocationUrl ?? "");
+  const [timerSeconds, setTimerSeconds] = useState<number>(q?.geoTimerSeconds ?? 10);
 
   React.useEffect(() => {
     setPrompt(q?.prompt ?? "");
     setMapUrl(q?.mapEmbedUrl ?? "");
     setAnswer(q?.answer ?? "");
     setAnswerLink(q?.answerLocationUrl ?? "");
-  }, [q?.prompt, q?.mapEmbedUrl, q?.answer, q?.answerLocationUrl]);
+    setTimerSeconds(q?.geoTimerSeconds ?? 10);
+  }, [q?.prompt, q?.mapEmbedUrl, q?.answer, q?.answerLocationUrl, q?.geoTimerSeconds]);
 
   return (
     <>
@@ -601,6 +603,23 @@ const GeoguesserFields = React.memo(function GeoguesserFields({
           })
         }
         placeholder="Paste the embed URL from Google Maps > Share > Embed"
+      />
+      <label className="label" style={{ marginTop: "8px" }}>
+        Move time (seconds)
+      </label>
+      <input
+        className="input"
+        type="number"
+        min={3}
+        max={90}
+        value={timerSeconds}
+        onChange={(e) => setTimerSeconds(Number(e.target.value))}
+        onBlur={() =>
+          upsertQuestion(category, points, {
+            geoTimerSeconds: Number.isFinite(timerSeconds) ? timerSeconds : 10,
+          })
+        }
+        placeholder="e.g. 10"
       />
       <div style={{ color: "var(--muted)", fontSize: "0.9rem", marginTop: "4px" }}>
         Tip: In Google Maps, pick a spot, go to Street View, click Share → Embed a map → Copy HTML, then paste the src URL here.
