@@ -1,0 +1,78 @@
+import type { Metadata } from "next";
+import { Geist, Geist_Mono } from "next/font/google";
+import Link from "next/link";
+import "./globals.css";
+
+const geistSans = Geist({
+  variable: "--font-geist-sans",
+  subsets: ["latin"],
+});
+
+const geistMono = Geist_Mono({
+  variable: "--font-geist-mono",
+  subsets: ["latin"],
+});
+
+export const metadata: Metadata = {
+  title: "Julebord Jeopardy",
+  description: "Party board and config for the Christmas table games",
+};
+
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
+  return (
+    <html lang="en">
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+      >
+        <div
+          style={{
+            maxWidth: "1200px",
+            margin: "0 auto",
+            padding: "32px 28px 64px",
+          }}
+        >
+          <header
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              marginBottom: "28px",
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "baseline", gap: "10px" }}>
+              <Link href="/" style={{ fontSize: "1.7rem", fontWeight: 800 }}>
+                🎄 Julebord Games
+              </Link>
+              <span style={{ color: "var(--muted)", fontSize: "0.95rem" }}>
+                Jeopardy-style board
+              </span>
+            </div>
+            <nav
+              style={{
+                display: "flex",
+                gap: "12px",
+                flexWrap: "wrap",
+                justifyContent: "flex-end",
+              }}
+            >
+              <Link className="button ghost" href="/config/teams">
+                Teams
+              </Link>
+              <Link className="button ghost" href="/config/questions">
+                Questions
+              </Link>
+              <Link className="button secondary" href="/game">
+                Game board
+              </Link>
+            </nav>
+          </header>
+          {children}
+        </div>
+      </body>
+    </html>
+  );
+}
