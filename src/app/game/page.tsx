@@ -33,6 +33,7 @@ export default function GameBoardPage() {
   const [boardTurnIndex, setBoardTurnIndex] = useState(0);
   const [lyricsTurnIndex, setLyricsTurnIndex] = useState(0);
   const [lastGuessTeamId, setLastGuessTeamId] = useState<string>("");
+  const [mapLocked, setMapLocked] = useState(true);
 
   const categories = useMemo(() => {
     const seen = new Set<string>();
@@ -82,6 +83,7 @@ export default function GameBoardPage() {
     setLyricsRevealed([]);
     setLastGuessTeamId("");
     setLyricsTurnIndex(0);
+    setMapLocked(true);
   };
 
   const markAnswered = (correct: boolean) => {
@@ -157,9 +159,12 @@ export default function GameBoardPage() {
     lyricsRevealed.length === lyricsSegments.length &&
     lyricsRevealed.every(Boolean);
   const answerImage =
-    activeQuestion?.answerImageData || activeQuestion?.imageData || null;
+    activeQuestion?.type === "lyrics"
+      ? null
+      : activeQuestion?.answerImageData || activeQuestion?.imageData || null;
   const answerImageName =
     activeQuestion?.answerImageName || activeQuestion?.imageName || "Answer image";
+  const answerVideoUrl = activeQuestion?.answerVideoUrl || null;
 
   const advanceToNextTeam = () => {
     if (activeTurnOrder.length === 0) return;
@@ -576,6 +581,70 @@ export default function GameBoardPage() {
                         </button>
                       </div>
                     </div>
+                  ) : activeQuestion.type === "geoguesser" ? (
+                    <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                      {activeQuestion.prompt && (
+                        <div style={{ fontSize: "1.4rem", lineHeight: 1.45 }}>
+                          {activeQuestion.prompt}
+                        </div>
+                      )}
+                      {activeQuestion.mapEmbedUrl ? (
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "10px" }}>
+                          <div style={{ color: "var(--muted)", fontSize: "0.95rem" }}>
+                            Map is {mapLocked ? "locked (view only)" : "unlocked (can move)"}
+                          </div>
+                          <button className="button ghost" onClick={() => setMapLocked((v) => !v)}>
+                            {mapLocked ? "Unlock map" : "Lock map"}
+                          </button>
+                        </div>
+                      ) : null}
+                      {activeQuestion.mapEmbedUrl ? (
+                        <div
+                          style={{
+                            position: "relative",
+                            borderRadius: "14px",
+                            overflow: "hidden",
+                            border: "1px solid rgba(255,255,255,0.12)",
+                            background: "rgba(255,255,255,0.04)",
+                            height: "420px",
+                          }}
+                        >
+                          <iframe
+                            src={activeQuestion.mapEmbedUrl}
+                            style={{
+                              width: "100%",
+                              height: "900px",
+                              border: "0",
+                              marginTop: "-220px",
+                              pointerEvents: mapLocked ? "none" : "auto",
+                            }}
+                            allowFullScreen
+                            loading="lazy"
+                          />
+                          {mapLocked && (
+                            <div
+                              style={{
+                                position: "absolute",
+                                inset: 0,
+                                pointerEvents: "none",
+                                background: "linear-gradient(180deg, rgba(10,12,18,0.08) 0%, rgba(10,12,18,0.45) 100%)",
+                              }}
+                            />
+                          )}
+                        </div>
+                      ) : (
+                        <div
+                          style={{
+                            padding: "14px",
+                            borderRadius: "12px",
+                            border: "1px dashed rgba(255,255,255,0.2)",
+                            color: "var(--muted)",
+                          }}
+                        >
+                          No Street View embed URL provided.
+                        </div>
+                      )}
+                    </div>
                   ) : activeQuestion.imageData ? (
                     <div
                       style={{
@@ -721,6 +790,24 @@ export default function GameBoardPage() {
                           />
                         </div>
                       )}
+                      {answerVideoUrl && (
+                        <div
+                          style={{
+                            borderRadius: "12px",
+                            overflow: "hidden",
+                            border: "1px solid rgba(255,255,255,0.12)",
+                            background: "rgba(255,255,255,0.04)",
+                            marginTop: "8px",
+                          }}
+                        >
+                          <iframe
+                            src={answerVideoUrl}
+                            style={{ width: "100%", height: "240px", border: "0" }}
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowFullScreen
+                          />
+                        </div>
+                      )}
                       {activeQuestion.lyricsSegments && activeQuestion.lyricsSegments.length > 0 && (
                         <div
                           style={{
@@ -745,6 +832,119 @@ export default function GameBoardPage() {
                               {line}
                             </div>
                           ))}
+                        </div>
+                      )}
+                    </div>
+                  ) : activeQuestion.type === "geoguesser" ? (
+                    <div
+                      style={{
+                        display: "grid",
+                        gridTemplateColumns: answerImage ? "1fr 1fr" : "1fr",
+                        gap: "16px",
+                        alignItems: "start",
+                        marginTop: "6px",
+                      }}
+                    >
+                      <div>
+                        <div
+                          style={{
+                            color: "var(--muted)",
+                            marginBottom: "6px",
+                            fontSize: "1rem",
+                          }}
+                        >
+                          Answer
+                        </div>
+                        <div
+                          style={{
+                            fontWeight: 800,
+                            fontSize: "2rem",
+                            lineHeight: 1.4,
+                            wordBreak: "break-word",
+                            overflowWrap: "anywhere",
+                          }}
+                        >
+                          {activeQuestion.answer || "No answer provided."}
+                        </div>
+                        {activeQuestion.answerLocationUrl && (
+                          <a
+                            href={activeQuestion.answerLocationUrl}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="button ghost"
+                            style={{ marginTop: "10px", display: "inline-flex" }}
+                          >
+                            Open in Google Maps
+                          </a>
+                        )}
+                        {activeQuestion.mapEmbedUrl && (
+                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "10px" }}>
+                            <div style={{ color: "var(--muted)", fontSize: "0.95rem" }}>
+                              Map is {mapLocked ? "locked (view only)" : "unlocked (can move)"}
+                            </div>
+                            <button className="button ghost" onClick={() => setMapLocked((v) => !v)}>
+                              {mapLocked ? "Unlock map" : "Lock map"}
+                            </button>
+                          </div>
+                        )}
+                        {activeQuestion.mapEmbedUrl && (
+                          <div
+                            style={{
+                              marginTop: "12px",
+                              borderRadius: "12px",
+                              overflow: "hidden",
+                              border: "1px solid rgba(255,255,255,0.12)",
+                              height: "320px",
+                            }}
+                          >
+                            <iframe
+                              src={activeQuestion.mapEmbedUrl}
+                              style={{
+                                width: "100%",
+                                height: "800px",
+                                border: "0",
+                                marginTop: "-200px",
+                                pointerEvents: mapLocked ? "none" : "auto",
+                              }}
+                              allowFullScreen
+                              loading="lazy"
+                            />
+                            {mapLocked && (
+                              <div
+                                style={{
+                                  position: "absolute",
+                                  inset: 0,
+                                  pointerEvents: "none",
+                                  background: "linear-gradient(180deg, rgba(10,12,18,0.08) 0%, rgba(10,12,18,0.45) 100%)",
+                                }}
+                              />
+                            )}
+                          </div>
+                        )}
+                      </div>
+                      {answerImage && (
+                        <div
+                          style={{
+                            borderRadius: "12px",
+                            overflow: "hidden",
+                            border: "1px solid rgba(255,255,255,0.12)",
+                            background: "rgba(255,255,255,0.04)",
+                            display: "grid",
+                            placeItems: "center",
+                            padding: "6px",
+                          }}
+                        >
+                          <img
+                            src={answerImage}
+                            alt={answerImageName}
+                            style={{
+                              width: "100%",
+                              maxHeight: "520px",
+                              height: "auto",
+                              objectFit: "contain",
+                              display: "block",
+                            }}
+                          />
                         </div>
                       )}
                     </div>

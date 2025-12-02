@@ -24,8 +24,12 @@ export type Question = {
   imageName?: string | null;
   answerImageData?: string | null;
   answerImageName?: string | null;
-  type?: "standard" | "lyrics";
+  type?: "standard" | "lyrics" | "geoguesser";
   lyricsSegments?: string[];
+  mapEmbedUrl?: string | null;
+  answerLocationLabel?: string | null;
+  answerLocationUrl?: string | null;
+  answerVideoUrl?: string | null;
 };
 
 export type TeamMap = Record<string, Team>;

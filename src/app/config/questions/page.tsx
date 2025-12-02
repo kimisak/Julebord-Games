@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { usePersistentState } from "@/hooks/usePersistentState";
 import { QUESTION_STORAGE_KEY } from "@/lib/storage";
 import { POINT_VALUES, type PointValue, type Question } from "@/lib/types";
@@ -28,6 +28,10 @@ function buildDefaultQuestions(): Question[] {
         answerImageName: null,
         type: "standard",
         lyricsSegments: [],
+        mapEmbedUrl: null,
+        answerLocationLabel: null,
+        answerLocationUrl: null,
+        answerVideoUrl: null,
       });
     });
   });
@@ -40,6 +44,7 @@ export default function QuestionConfigPage() {
     useMemo(() => buildDefaultQuestions(), []),
   );
   const [newCategory, setNewCategory] = useState("");
+  const [categoryNames, setCategoryNames] = useState<Record<string, string>>({});
 
   const categories = useMemo(() => {
     const existing = Array.from(new Set(questions.map((q) => q.category)));
@@ -47,6 +52,22 @@ export default function QuestionConfigPage() {
       ? [...existing, newCategory]
       : existing;
   }, [questions, newCategory]);
+
+  useEffect(() => {
+    setCategoryNames((prev) => {
+      const next = { ...prev };
+      categories.forEach((cat) => {
+        if (!next[cat]) next[cat] = cat;
+      });
+      // prune removed categories
+      Object.keys(next).forEach((key) => {
+        if (!categories.includes(key)) {
+          delete next[key];
+        }
+      });
+      return next;
+    });
+  }, [categories]);
 
   const upsertQuestion = (
     category: string,
@@ -77,6 +98,10 @@ export default function QuestionConfigPage() {
           answerImageName: null,
           type: "standard",
           lyricsSegments: [],
+          mapEmbedUrl: null,
+          answerLocationLabel: null,
+          answerLocationUrl: null,
+          answerVideoUrl: null,
           ...updates,
         },
       ];
@@ -102,6 +127,10 @@ export default function QuestionConfigPage() {
         answerImageName: null,
         type: "standard",
         lyricsSegments: [],
+        mapEmbedUrl: null,
+        answerLocationLabel: null,
+        answerLocationUrl: null,
+        answerVideoUrl: null,
       }));
       return [...prev, ...additions];
     });
@@ -110,6 +139,26 @@ export default function QuestionConfigPage() {
 
   const deleteCategory = (category: string) => {
     setQuestions((prev) => prev.filter((q) => q.category !== category));
+  };
+
+  const renameCategory = (oldName: string, newNameRaw: string) => {
+    const newName = newNameRaw.trim();
+    if (!newName || newName === oldName) return;
+    // avoid duplicates
+    if (categories.includes(newName)) {
+      alert("A category with that name already exists.");
+      return;
+    }
+    setQuestions((prev) =>
+      prev.map((q) =>
+        q.category === oldName
+          ? {
+              ...q,
+              category: newName,
+            }
+          : q,
+      ),
+    );
   };
 
   const resetAnsweredFlags = () => {
@@ -169,6 +218,503 @@ export default function QuestionConfigPage() {
     };
     reader.readAsDataURL(file);
   };
+
+type FieldProps = {
+  category: string;
+  points: PointValue;
+  q: Question | undefined;
+  upsertQuestion: (
+    category: string,
+    points: PointValue,
+    updates: Partial<Question>,
+  ) => void;
+  handleImageChange?: (
+    category: string,
+    points: PointValue,
+    file: File | null,
+  ) => void;
+  handleAnswerImageChange: (
+    category: string,
+    points: PointValue,
+    file: File | null,
+  ) => void;
+};
+
+const StandardFields = React.memo(function StandardFields({
+  category,
+  points,
+  q,
+  upsertQuestion,
+  handleImageChange,
+  handleAnswerImageChange,
+}: FieldProps) {
+  const [prompt, setPrompt] = useState(q?.prompt ?? "");
+  const [answer, setAnswer] = useState(q?.answer ?? "");
+
+  React.useEffect(() => {
+    setPrompt(q?.prompt ?? "");
+    setAnswer(q?.answer ?? "");
+  }, [q?.prompt, q?.answer]);
+
+  return (
+    <>
+      <label className="label">Question</label>
+      <textarea
+        value={prompt}
+        onChange={(e) => setPrompt(e.target.value)}
+        onBlur={() =>
+          upsertQuestion(category, points, {
+            prompt,
+          })
+        }
+        style={{
+          width: "100%",
+          minHeight: "70px",
+          borderRadius: "10px",
+          border: "1px solid rgba(255,255,255,0.12)",
+          background: "rgba(255,255,255,0.04)",
+          color: "var(--foreground)",
+          padding: "10px",
+        }}
+        placeholder="Write the clue"
+      />
+      <label className="label" style={{ marginTop: "8px" }}>
+        Answer
+      </label>
+      <textarea
+        value={answer}
+        onChange={(e) => setAnswer(e.target.value)}
+        onBlur={() =>
+          upsertQuestion(category, points, {
+            answer,
+          })
+        }
+        style={{
+          width: "100%",
+          minHeight: "60px",
+          borderRadius: "10px",
+          border: "1px solid rgba(255,255,255,0.12)",
+          background: "rgba(255,255,255,0.04)",
+          color: "var(--foreground)",
+          padding: "10px",
+        }}
+        placeholder="Write the expected answer"
+      />
+      <label className="label" style={{ marginTop: "8px" }}>
+        Image (optional)
+      </label>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: "8px",
+          flexWrap: "wrap",
+        }}
+      >
+        <input
+          type="file"
+          accept="image/*"
+          onChange={(e) =>
+            handleImageChange?.(
+              category,
+              points,
+              e.target.files?.[0] ?? null,
+            )
+          }
+          style={{ color: "var(--muted)", maxWidth: "100%" }}
+        />
+        {q?.imageData && (
+          <button
+            className="button ghost"
+            onClick={() =>
+              upsertQuestion(category, points, {
+                imageData: null,
+                imageName: null,
+              })
+            }
+          >
+            Remove image
+          </button>
+        )}
+      </div>
+      {q?.imageData && (
+        <div
+          style={{
+            marginTop: "10px",
+            borderRadius: "10px",
+            overflow: "hidden",
+            border: "1px solid rgba(255,255,255,0.1)",
+          }}
+        >
+          <img
+            src={q.imageData}
+            alt={q.imageName || "Question image"}
+            style={{
+              width: "100%",
+              height: "auto",
+              display: "block",
+              maxHeight: "240px",
+              objectFit: "contain",
+            }}
+          />
+          {q.imageName && (
+            <div
+              style={{
+                padding: "6px 10px",
+                fontSize: "0.9rem",
+                color: "var(--muted)",
+                background: "rgba(255,255,255,0.03)",
+              }}
+            >
+              {q.imageName}
+            </div>
+          )}
+        </div>
+      )}
+      <label className="label" style={{ marginTop: "8px" }}>
+        Answer image (optional)
+      </label>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: "8px",
+          flexWrap: "wrap",
+        }}
+      >
+        <input
+          type="file"
+          accept="image/*"
+          onChange={(e) =>
+            handleAnswerImageChange(
+              category,
+              points,
+              e.target.files?.[0] ?? null,
+            )
+          }
+          style={{ color: "var(--muted)", maxWidth: "100%" }}
+        />
+        {q?.answerImageData && (
+          <button
+            className="button ghost"
+            onClick={() =>
+              upsertQuestion(category, points, {
+                answerImageData: null,
+                answerImageName: null,
+              })
+            }
+        >
+          Remove answer image
+        </button>
+      )}
+    </div>
+      {q?.answerImageData && (
+        <div
+          style={{
+            marginTop: "10px",
+            borderRadius: "10px",
+            overflow: "hidden",
+            border: "1px solid rgba(255,255,255,0.1)",
+          }}
+        >
+          <img
+            src={q.answerImageData}
+            alt={q.answerImageName || "Answer image"}
+            style={{
+              width: "100%",
+              height: "auto",
+              display: "block",
+              maxHeight: "240px",
+              objectFit: "contain",
+            }}
+          />
+          {q.answerImageName && (
+            <div
+              style={{
+                padding: "6px 10px",
+                fontSize: "0.9rem",
+                color: "var(--muted)",
+                background: "rgba(255,255,255,0.03)",
+              }}
+            >
+              {q.answerImageName}
+            </div>
+          )}
+        </div>
+      )}
+    </>
+  );
+});
+
+const LyricsFields = React.memo(function LyricsFields(props: FieldProps) {
+  const { category, points, q, upsertQuestion } = props;
+  const [prompt, setPrompt] = useState(q?.prompt ?? "");
+  const [lyrics, setLyrics] = useState((q?.lyricsSegments ?? []).join("\n"));
+  const [answer, setAnswer] = useState(q?.answer ?? "");
+  const [answerVideoUrl, setAnswerVideoUrl] = useState(q?.answerVideoUrl ?? "");
+
+  React.useEffect(() => {
+    setPrompt(q?.prompt ?? "");
+    setLyrics((q?.lyricsSegments ?? []).join("\n"));
+    setAnswer(q?.answer ?? "");
+    setAnswerVideoUrl(q?.answerVideoUrl ?? "");
+  }, [q?.prompt, q?.lyricsSegments, q?.answer, q?.answerVideoUrl]);
+
+  return (
+    <>
+      <label className="label">Intro / hint (optional)</label>
+      <textarea
+        value={prompt}
+        onChange={(e) => setPrompt(e.target.value)}
+        onBlur={() =>
+          upsertQuestion(category, points, {
+            prompt,
+          })
+        }
+        style={{
+          width: "100%",
+          minHeight: "60px",
+          borderRadius: "10px",
+          border: "1px solid rgba(255,255,255,0.12)",
+          background: "rgba(255,255,255,0.04)",
+          color: "var(--foreground)",
+          padding: "10px",
+        }}
+        placeholder="Optional intro or clue"
+      />
+      <label className="label" style={{ marginTop: "8px" }}>
+        Answer video URL (YouTube embed or share link)
+      </label>
+      <input
+        className="input"
+        value={answerVideoUrl}
+        onChange={(e) => setAnswerVideoUrl(e.target.value)}
+        onBlur={() =>
+          upsertQuestion(category, points, {
+            answerVideoUrl: answerVideoUrl || null,
+          })
+        }
+        placeholder="https://youtube.com/watch?v=..."
+      />
+      <label className="label" style={{ marginTop: "8px" }}>
+        Lyrics lines (one per line)
+      </label>
+      <textarea
+        value={lyrics}
+        onChange={(e) => setLyrics(e.target.value)}
+        onBlur={() =>
+          upsertQuestion(category, points, {
+            lyricsSegments: lyrics.split(/\r?\n/),
+          })
+        }
+        style={{
+          width: "100%",
+          minHeight: "110px",
+          borderRadius: "10px",
+          border: "1px solid rgba(255,255,255,0.12)",
+          background: "rgba(255,255,255,0.04)",
+          color: "var(--foreground)",
+          padding: "10px",
+        }}
+        placeholder="Add each lyric line on its own line"
+      />
+      <div style={{ marginTop: "6px", color: "var(--muted)", fontSize: "0.9rem" }}>
+        {q?.lyricsSegments?.length ?? 0} line(s). Players click squares to reveal each line.
+      </div>
+      <label className="label" style={{ marginTop: "8px" }}>
+        Answer
+      </label>
+      <textarea
+        value={answer}
+        onChange={(e) => setAnswer(e.target.value)}
+        onBlur={() =>
+          upsertQuestion(category, points, {
+            answer,
+          })
+        }
+        style={{
+          width: "100%",
+          minHeight: "60px",
+          borderRadius: "10px",
+          border: "1px solid rgba(255,255,255,0.12)",
+          background: "rgba(255,255,255,0.04)",
+          color: "var(--foreground)",
+          padding: "10px",
+        }}
+        placeholder="Expected song title or answer"
+      />
+    </>
+  );
+});
+
+const GeoguesserFields = React.memo(function GeoguesserFields({
+  category,
+  points,
+  q,
+  upsertQuestion,
+  handleAnswerImageChange,
+}: FieldProps) {
+  const [prompt, setPrompt] = useState(q?.prompt ?? "");
+  const [mapUrl, setMapUrl] = useState(q?.mapEmbedUrl ?? "");
+  const [answer, setAnswer] = useState(q?.answer ?? "");
+  const [answerLink, setAnswerLink] = useState(q?.answerLocationUrl ?? "");
+
+  React.useEffect(() => {
+    setPrompt(q?.prompt ?? "");
+    setMapUrl(q?.mapEmbedUrl ?? "");
+    setAnswer(q?.answer ?? "");
+    setAnswerLink(q?.answerLocationUrl ?? "");
+  }, [q?.prompt, q?.mapEmbedUrl, q?.answer, q?.answerLocationUrl]);
+
+  return (
+    <>
+      <label className="label">Hint (optional)</label>
+      <textarea
+        value={prompt}
+        onChange={(e) => setPrompt(e.target.value)}
+        onBlur={() =>
+          upsertQuestion(category, points, {
+            prompt,
+          })
+        }
+        style={{
+          width: "100%",
+          minHeight: "60px",
+          borderRadius: "10px",
+          border: "1px solid rgba(255,255,255,0.12)",
+          background: "rgba(255,255,255,0.04)",
+          color: "var(--foreground)",
+          padding: "10px",
+        }}
+        placeholder="Optional hint or instructions"
+      />
+      <label className="label" style={{ marginTop: "8px" }}>
+        Google Maps Street View embed URL
+      </label>
+      <input
+        className="input"
+        value={mapUrl}
+        onChange={(e) => setMapUrl(e.target.value)}
+        onBlur={() =>
+          upsertQuestion(category, points, {
+            mapEmbedUrl: mapUrl || null,
+          })
+        }
+        placeholder="Paste the embed URL from Google Maps > Share > Embed"
+      />
+      <div style={{ color: "var(--muted)", fontSize: "0.9rem", marginTop: "4px" }}>
+        Tip: In Google Maps, pick a spot, go to Street View, click Share → Embed a map → Copy HTML, then paste the src URL here.
+      </div>
+      <label className="label" style={{ marginTop: "8px" }}>
+        Answer text (address / location)
+      </label>
+      <textarea
+        value={answer}
+        onChange={(e) => setAnswer(e.target.value)}
+        onBlur={() =>
+          upsertQuestion(category, points, {
+            answer,
+          })
+        }
+        style={{
+          width: "100%",
+          minHeight: "60px",
+          borderRadius: "10px",
+          border: "1px solid rgba(255,255,255,0.12)",
+          background: "rgba(255,255,255,0.04)",
+          color: "var(--foreground)",
+          padding: "10px",
+        }}
+        placeholder="Expected location description or address"
+      />
+      <label className="label" style={{ marginTop: "8px" }}>
+        Answer link (Google Maps URL)
+      </label>
+      <input
+        className="input"
+        value={answerLink}
+        onChange={(e) => setAnswerLink(e.target.value)}
+        onBlur={() =>
+          upsertQuestion(category, points, {
+            answerLocationUrl: answerLink || null,
+          })
+        }
+        placeholder="https://maps.google.com/..."
+      />
+      <label className="label" style={{ marginTop: "8px" }}>
+        Answer image (optional)
+      </label>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: "8px",
+          flexWrap: "wrap",
+        }}
+      >
+        <input
+          type="file"
+          accept="image/*"
+          onChange={(e) =>
+            handleAnswerImageChange(
+              category,
+              points,
+              e.target.files?.[0] ?? null,
+            )
+          }
+          style={{ color: "var(--muted)", maxWidth: "100%" }}
+        />
+        {q?.answerImageData && (
+          <button
+            className="button ghost"
+            onClick={() =>
+              upsertQuestion(category, points, {
+                answerImageData: null,
+                answerImageName: null,
+              })
+            }
+          >
+            Remove answer image
+          </button>
+        )}
+      </div>
+      {q?.answerImageData && (
+        <div
+          style={{
+            marginTop: "10px",
+            borderRadius: "10px",
+            overflow: "hidden",
+            border: "1px solid rgba(255,255,255,0.1)",
+          }}
+        >
+          <img
+            src={q.answerImageData}
+            alt={q.answerImageName || "Answer image"}
+            style={{
+              width: "100%",
+              height: "auto",
+              display: "block",
+              maxHeight: "240px",
+              objectFit: "contain",
+            }}
+          />
+          {q.answerImageName && (
+            <div
+              style={{
+                padding: "6px 10px",
+                fontSize: "0.9rem",
+                color: "var(--muted)",
+                background: "rgba(255,255,255,0.03)",
+              }}
+            >
+              {q.answerImageName}
+            </div>
+          )}
+        </div>
+      )}
+    </>
+  );
+});
 
   return (
     <main className="card" style={{ padding: "24px" }}>
@@ -233,7 +779,30 @@ export default function QuestionConfigPage() {
                 gap: "10px",
               }}
             >
-              <h2 style={{ margin: 0 }}>{category}</h2>
+              <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
+                <input
+                  className="input"
+                  style={{ width: "220px" }}
+                  value={categoryNames[category] ?? category}
+                  onChange={(e) =>
+                    setCategoryNames((prev) => ({
+                      ...prev,
+                      [category]: e.target.value,
+                    }))
+                  }
+                  onBlur={() =>
+                    renameCategory(category, categoryNames[category] ?? category)
+                  }
+                />
+                <button
+                  className="button secondary"
+                  onClick={() =>
+                    renameCategory(category, categoryNames[category] ?? category)
+                  }
+                >
+                  Rename
+                </button>
+              </div>
               <button
                 className="button ghost"
                 onClick={() => deleteCategory(category)}
@@ -277,10 +846,11 @@ export default function QuestionConfigPage() {
                             })
                           }
                           className="input"
-                          style={{ maxWidth: "140px", padding: "0.45rem 0.6rem" }}
+                          style={{ maxWidth: "180px", padding: "0.45rem 0.6rem" }}
                         >
                           <option value="standard">Standard</option>
                           <option value="lyrics">Lyrics grid</option>
+                          <option value="geoguesser">Geoguesser</option>
                         </select>
                       </div>
                       {q?.answered && (
@@ -289,329 +859,33 @@ export default function QuestionConfigPage() {
                         </span>
                       )}
                     </div>
-                    {(q?.type ?? "standard") === "standard" ? (
-                      <>
-                        <label className="label">Question</label>
-                        <textarea
-                          value={q?.prompt ?? ""}
-                          onChange={(e) =>
-                            upsertQuestion(category, points, {
-                              prompt: e.target.value,
-                            })
-                          }
-                          style={{
-                            width: "100%",
-                            minHeight: "70px",
-                            borderRadius: "10px",
-                            border: "1px solid rgba(255,255,255,0.12)",
-                            background: "rgba(255,255,255,0.04)",
-                            color: "var(--foreground)",
-                            padding: "10px",
-                          }}
-                          placeholder="Write the clue"
-                        />
-                        <label className="label" style={{ marginTop: "8px" }}>
-                          Answer
-                        </label>
-                        <textarea
-                          value={q?.answer ?? ""}
-                          onChange={(e) =>
-                            upsertQuestion(category, points, {
-                              answer: e.target.value,
-                            })
-                          }
-                          style={{
-                            width: "100%",
-                            minHeight: "60px",
-                            borderRadius: "10px",
-                            border: "1px solid rgba(255,255,255,0.12)",
-                            background: "rgba(255,255,255,0.04)",
-                            color: "var(--foreground)",
-                            padding: "10px",
-                          }}
-                          placeholder="Write the expected answer"
-                        />
-                        <label className="label" style={{ marginTop: "8px" }}>
-                          Image (optional)
-                        </label>
-                        <div
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: "8px",
-                            flexWrap: "wrap",
-                          }}
-                        >
-                          <input
-                            type="file"
-                            accept="image/*"
-                            onChange={(e) =>
-                              handleImageChange(
-                                category,
-                                points,
-                                e.target.files?.[0] ?? null,
-                              )
-                            }
-                            style={{ color: "var(--muted)", maxWidth: "100%" }}
-                          />
-                          {q?.imageData && (
-                            <button
-                              className="button ghost"
-                              onClick={() =>
-                                upsertQuestion(category, points, {
-                                  imageData: null,
-                                  imageName: null,
-                                })
-                              }
-                            >
-                              Remove image
-                            </button>
-                          )}
-                        </div>
-                        {q?.imageData && (
-                          <div
-                            style={{
-                              marginTop: "10px",
-                              borderRadius: "10px",
-                              overflow: "hidden",
-                              border: "1px solid rgba(255,255,255,0.1)",
-                            }}
-                          >
-                        <img
-                          src={q.imageData}
-                          alt={q.imageName || "Question image"}
-                          style={{
-                            width: "100%",
-                            height: "auto",
-                            display: "block",
-                            maxHeight: "240px",
-                            objectFit: "contain",
-                          }}
-                        />
-                            {q.imageName && (
-                              <div
-                                style={{
-                                  padding: "6px 10px",
-                                  fontSize: "0.9rem",
-                                  color: "var(--muted)",
-                                  background: "rgba(255,255,255,0.03)",
-                                }}
-                              >
-                                {q.imageName}
-                              </div>
-                            )}
-                          </div>
-                        )}
-                        <label className="label" style={{ marginTop: "8px" }}>
-                          Answer image (optional)
-                        </label>
-                        <div
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: "8px",
-                            flexWrap: "wrap",
-                          }}
-                        >
-                          <input
-                            type="file"
-                            accept="image/*"
-                            onChange={(e) =>
-                              handleAnswerImageChange(
-                                category,
-                                points,
-                                e.target.files?.[0] ?? null,
-                              )
-                            }
-                            style={{ color: "var(--muted)", maxWidth: "100%" }}
-                          />
-                          {q?.answerImageData && (
-                            <button
-                              className="button ghost"
-                              onClick={() =>
-                                upsertQuestion(category, points, {
-                                  answerImageData: null,
-                                  answerImageName: null,
-                                })
-                              }
-                            >
-                              Remove answer image
-                            </button>
-                          )}
-                        </div>
-                        {q?.answerImageData && (
-                          <div
-                            style={{
-                              marginTop: "10px",
-                              borderRadius: "10px",
-                              overflow: "hidden",
-                              border: "1px solid rgba(255,255,255,0.1)",
-                            }}
-                          >
-                            <img
-                              src={q.answerImageData}
-                              alt={q.answerImageName || "Answer image"}
-                              style={{
-                                width: "100%",
-                                height: "auto",
-                                display: "block",
-                                maxHeight: "240px",
-                                objectFit: "contain",
-                              }}
-                            />
-                            {q.answerImageName && (
-                              <div
-                                style={{
-                                  padding: "6px 10px",
-                                  fontSize: "0.9rem",
-                                  color: "var(--muted)",
-                                  background: "rgba(255,255,255,0.03)",
-                                }}
-                              >
-                                {q.answerImageName}
-                              </div>
-                            )}
-                          </div>
-                        )}
-                      </>
-                    ) : (
-                      <>
-                        <label className="label">Intro / hint (optional)</label>
-                        <textarea
-                          value={q?.prompt ?? ""}
-                          onChange={(e) =>
-                            upsertQuestion(category, points, {
-                              prompt: e.target.value,
-                            })
-                          }
-                          style={{
-                            width: "100%",
-                            minHeight: "60px",
-                            borderRadius: "10px",
-                            border: "1px solid rgba(255,255,255,0.12)",
-                            background: "rgba(255,255,255,0.04)",
-                            color: "var(--foreground)",
-                            padding: "10px",
-                          }}
-                          placeholder="Optional intro or clue"
-                        />
-                        <label className="label" style={{ marginTop: "8px" }}>
-                          Lyrics lines (one per line)
-                        </label>
-                        <textarea
-                          value={(q?.lyricsSegments ?? []).join("\n")}
-                          onChange={(e) =>
-                            upsertQuestion(category, points, {
-                              lyricsSegments: e.target.value.split(/\r?\n/),
-                            })
-                          }
-                          style={{
-                            width: "100%",
-                            minHeight: "110px",
-                            borderRadius: "10px",
-                            border: "1px solid rgba(255,255,255,0.12)",
-                            background: "rgba(255,255,255,0.04)",
-                            color: "var(--foreground)",
-                            padding: "10px",
-                          }}
-                          placeholder="Add each lyric line on its own line"
-                        />
-                        <div style={{ marginTop: "6px", color: "var(--muted)", fontSize: "0.9rem" }}>
-                          {q?.lyricsSegments?.length ?? 0} line(s). Players click squares to reveal each line.
-                        </div>
-                        <label className="label" style={{ marginTop: "8px" }}>
-                          Answer
-                        </label>
-                        <textarea
-                          value={q?.answer ?? ""}
-                          onChange={(e) =>
-                            upsertQuestion(category, points, {
-                              answer: e.target.value,
-                            })
-                          }
-                          style={{
-                            width: "100%",
-                            minHeight: "60px",
-                            borderRadius: "10px",
-                            border: "1px solid rgba(255,255,255,0.12)",
-                            background: "rgba(255,255,255,0.04)",
-                            color: "var(--foreground)",
-                            padding: "10px",
-                          }}
-                          placeholder="Expected song title or answer"
-                        />
-                        <label className="label" style={{ marginTop: "8px" }}>
-                          Answer image (optional)
-                        </label>
-                        <div
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: "8px",
-                            flexWrap: "wrap",
-                          }}
-                        >
-                          <input
-                            type="file"
-                            accept="image/*"
-                            onChange={(e) =>
-                              handleAnswerImageChange(
-                                category,
-                                points,
-                                e.target.files?.[0] ?? null,
-                              )
-                            }
-                            style={{ color: "var(--muted)", maxWidth: "100%" }}
-                          />
-                          {q?.answerImageData && (
-                            <button
-                              className="button ghost"
-                              onClick={() =>
-                                upsertQuestion(category, points, {
-                                  answerImageData: null,
-                                  answerImageName: null,
-                                })
-                              }
-                            >
-                              Remove answer image
-                            </button>
-                          )}
-                        </div>
-                        {q?.answerImageData && (
-                          <div
-                            style={{
-                              marginTop: "10px",
-                              borderRadius: "10px",
-                              overflow: "hidden",
-                              border: "1px solid rgba(255,255,255,0.1)",
-                            }}
-                          >
-                            <img
-                              src={q.answerImageData}
-                              alt={q.answerImageName || "Answer image"}
-                              style={{
-                                width: "100%",
-                                height: "auto",
-                                display: "block",
-                                maxHeight: "240px",
-                                objectFit: "contain",
-                              }}
-                            />
-                            {q.answerImageName && (
-                              <div
-                                style={{
-                                  padding: "6px 10px",
-                                  fontSize: "0.9rem",
-                                  color: "var(--muted)",
-                                  background: "rgba(255,255,255,0.03)",
-                                }}
-                              >
-                                {q.answerImageName}
-                              </div>
-                            )}
-                          </div>
-                        )}
-                      </>
+                    {(q?.type ?? "standard") === "standard" && (
+                      <StandardFields
+                        category={category}
+                        points={points}
+                        q={q}
+                        upsertQuestion={upsertQuestion}
+                        handleImageChange={handleImageChange}
+                        handleAnswerImageChange={handleAnswerImageChange}
+                      />
+                    )}
+                    {(q?.type ?? "standard") === "lyrics" && (
+                      <LyricsFields
+                        category={category}
+                        points={points}
+                        q={q}
+                        upsertQuestion={upsertQuestion}
+                        handleAnswerImageChange={handleAnswerImageChange}
+                      />
+                    )}
+                    {(q?.type ?? "standard") === "geoguesser" && (
+                      <GeoguesserFields
+                        category={category}
+                        points={points}
+                        q={q}
+                        upsertQuestion={upsertQuestion}
+                        handleAnswerImageChange={handleAnswerImageChange}
+                      />
                     )}
                   </div>
                 );
