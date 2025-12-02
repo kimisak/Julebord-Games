@@ -5,6 +5,14 @@ import { usePersistentState } from "@/hooks/usePersistentState";
 import { TEAM_STORAGE_KEY } from "@/lib/storage";
 import type { Player, Team } from "@/lib/types";
 
+const emojiOptions = [
+  { emoji: "🎄", label: "Tree", base: "#0b8a3b", glow: "#d1fae5" },
+  { emoji: "⭐️", label: "Star", base: "#b8860b", glow: "#ffe29f" },
+  { emoji: "🔔", label: "Bell", base: "#b03060", glow: "#ffd6e0" },
+  { emoji: "❄️", label: "Snow", base: "#0f4c75", glow: "#b0e0ff" },
+  { emoji: "🎁", label: "Gift", base: "#b9001f", glow: "#f7c948" },
+];
+
 function makeId(prefix: string) {
   return `${prefix}-${(globalThis.crypto?.randomUUID?.() ?? Math.random().toString(16).slice(2))}`;
 }
@@ -15,6 +23,9 @@ function createDefaultTeams(): Team[] {
       id: makeId("team"),
       name: "Fir Spruce",
       score: 0,
+      badgeEmoji: emojiOptions[0].emoji,
+      accentBase: emojiOptions[0].base,
+      accentGlow: emojiOptions[0].glow,
       players: [
         { id: makeId("p"), name: "Player 1" },
         { id: makeId("p"), name: "Player 2" },
@@ -25,6 +36,9 @@ function createDefaultTeams(): Team[] {
       id: makeId("team"),
       name: "Pepperkake",
       score: 0,
+      badgeEmoji: emojiOptions[1].emoji,
+      accentBase: emojiOptions[1].base,
+      accentGlow: emojiOptions[1].glow,
       players: [
         { id: makeId("p"), name: "Player 1" },
         { id: makeId("p"), name: "Player 2" },
@@ -35,6 +49,9 @@ function createDefaultTeams(): Team[] {
       id: makeId("team"),
       name: "Reindeer Crew",
       score: 0,
+      badgeEmoji: emojiOptions[2].emoji,
+      accentBase: emojiOptions[2].base,
+      accentGlow: emojiOptions[2].glow,
       players: [
         { id: makeId("p"), name: "Player 1" },
         { id: makeId("p"), name: "Player 2" },
@@ -111,6 +128,9 @@ export default function TeamConfigPage() {
         id: makeId("team"),
         name: `Team ${prev.length + 1}`,
         score: 0,
+        badgeEmoji: emojiOptions[prev.length % emojiOptions.length].emoji,
+        accentBase: emojiOptions[prev.length % emojiOptions.length].base,
+        accentGlow: emojiOptions[prev.length % emojiOptions.length].glow,
         players: [
           { id: makeId("p"), name: "Player 1" },
           { id: makeId("p"), name: "Player 2" },
@@ -175,6 +195,34 @@ export default function TeamConfigPage() {
                   onChange={(e) => handleTeamNameChange(team.id, e.target.value)}
                   placeholder="Team name"
                 />
+              </div>
+              <div style={{ minWidth: "120px" }}>
+                <label className="label">Emoji</label>
+                <select
+                  className="input"
+                  value={team.badgeEmoji ?? ""}
+                  onChange={(e) => {
+                    const choice = emojiOptions.find((opt) => opt.emoji === e.target.value);
+                    setTeams((prev) =>
+                      prev.map((t) =>
+                        t.id === team.id
+                          ? {
+                              ...t,
+                              badgeEmoji: choice?.emoji ?? null,
+                              accentBase: choice?.base ?? t.accentBase ?? null,
+                              accentGlow: choice?.glow ?? t.accentGlow ?? null,
+                            }
+                          : t,
+                      ),
+                    );
+                  }}
+                >
+                  {emojiOptions.map((opt) => (
+                    <option key={opt.emoji} value={opt.emoji}>
+                      {opt.emoji} {opt.label}
+                    </option>
+                  ))}
+                </select>
               </div>
               <button
                 className="button ghost"

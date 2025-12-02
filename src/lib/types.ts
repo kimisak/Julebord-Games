@@ -11,6 +11,9 @@ export type Team = {
   name: string;
   players: Player[];
   score: number;
+  badgeEmoji?: string | null;
+  accentBase?: string | null;
+  accentGlow?: string | null;
 };
 
 export type Question = {
@@ -30,6 +33,7 @@ export type Question = {
   answerLocationLabel?: string | null;
   answerLocationUrl?: string | null;
   answerVideoUrl?: string | null;
+  lyricsRedPattern?: number[];
 };
 
 export type TeamMap = Record<string, Team>;
