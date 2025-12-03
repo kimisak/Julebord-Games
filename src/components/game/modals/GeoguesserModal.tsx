@@ -37,6 +37,8 @@ export function GeoguesserModal({
   timerUsed,
 }: Props) {
   const lockDisabled = timerUsed ? true : !mapLocked && countdownSeconds !== null;
+  const unlockCost = question.geoUnlockCost ?? 0;
+  const unlockDuration = question.geoTimerSeconds ?? 10;
 
   return (
     <>
@@ -104,26 +106,33 @@ export function GeoguesserModal({
               )}
             </div>
             {question.mapEmbedUrl && (
-              <div style={{ display: "flex", gap: "10px", alignItems: "center", flexWrap: "wrap" }}>
-                <div style={{ color: "var(--muted)", fontSize: "0.95rem" }}>
-                  {mapLocked ? "Map locked (view only)" : "Map unlocked · move now"}
-                  {!mapLocked && countdownSeconds !== null && (
-                    <strong style={{ color: "#f7c948", marginLeft: "8px" }}>
-                      {countdownSeconds}s
-                    </strong>
-                  )}
+              <div style={{ display: "grid", gap: "6px", justifyItems: "end" }}>
+                <div style={{ display: "flex", gap: "10px", alignItems: "center", flexWrap: "wrap" }}>
+                  <div style={{ color: "var(--muted)", fontSize: "0.95rem" }}>
+                    {mapLocked ? "Map locked (view only)" : "Map unlocked · move now"}
+                    {!mapLocked && countdownSeconds !== null && (
+                      <strong style={{ color: "#f7c948", marginLeft: "8px" }}>
+                        {countdownSeconds}s
+                      </strong>
+                    )}
+                  </div>
+                  <button
+                    className="button ghost"
+                    onClick={onToggleLock}
+                    disabled={lockDisabled}
+                    style={{
+                      opacity: lockDisabled ? 0.7 : 1,
+                      cursor: lockDisabled ? "not-allowed" : "pointer",
+                    }}
+                  >
+                    {mapLocked ? "Unlock map" : "Lock map"}
+                  </button>
                 </div>
-                <button
-                  className="button ghost"
-                  onClick={onToggleLock}
-                  disabled={lockDisabled}
-                  style={{
-                    opacity: lockDisabled ? 0.7 : 1,
-                    cursor: lockDisabled ? "not-allowed" : "pointer",
-                  }}
-                >
-                  {mapLocked ? "Unlock map" : "Lock map"}
-                </button>
+                <div style={{ color: "var(--muted)", fontSize: "0.9rem", textAlign: "right" }}>
+                  Unlocking deducts{" "}
+                  <strong style={{ color: "#f7c948" }}>{unlockCost} pts</strong> from this question
+                  and opens the map for {unlockDuration}s.
+                </div>
               </div>
             )}
           </div>
@@ -295,6 +304,8 @@ export function GeoguesserModal({
                     }}
                     allowFullScreen
                     loading="lazy"
+                    referrerPolicy="no-referrer"
+                    sandbox="allow-same-origin allow-scripts allow-popups allow-forms allow-presentation"
                   />
                 </div>
               )}

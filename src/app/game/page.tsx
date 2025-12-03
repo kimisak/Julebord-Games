@@ -49,6 +49,8 @@ export default function GameBoardPage() {
   const [mapLocked, setMapLocked] = useState(true);
   const [geoCountdown, setGeoCountdown] = useState<number | null>(null);
   const [geoTimerUsed, setGeoTimerUsed] = useState(false);
+  const [geoPotential, setGeoPotential] = useState<number>(0);
+  const [geoCostApplied, setGeoCostApplied] = useState(false);
   const [jokerRound, setJokerRound] = useState<JokerRound | null>(null);
   const [jokerProgress, setJokerProgress] = useState<JokerProgress | null>(null);
   const [showJokerConfetti, setShowJokerConfetti] = useState(false);
@@ -170,6 +172,8 @@ export default function GameBoardPage() {
     if (question.type === "geoguesser") {
       const duration = question.geoTimerSeconds ?? 10;
       normalized = { ...question, geoTimerSeconds: duration };
+      setGeoPotential(question.points ?? 0);
+      setGeoCostApplied(false);
     }
     if (question.type === "joker") {
       const count = Math.max(3, Math.min(9, question.jokerCount ?? 5));
@@ -269,6 +273,8 @@ export default function GameBoardPage() {
     setLyricsPattern([]);
     setGeoCountdown(null);
     setGeoTimerUsed(false);
+    setGeoPotential(0);
+    setGeoCostApplied(false);
     setJokerRound(null);
     setJokerProgress(null);
     setShowJokerConfetti(false);
@@ -343,6 +349,13 @@ export default function GameBoardPage() {
     if (!activeQuestion || activeQuestion.type !== "geoguesser") return;
     if (geoTimerUsed && mapLocked) return;
     if (mapLocked) {
+      if (!geoCostApplied) {
+        const cost = activeQuestion.geoUnlockCost ?? 0;
+        if (cost > 0) {
+          setGeoPotential((prev) => Math.max(0, prev - cost));
+        }
+        setGeoCostApplied(true);
+      }
       const duration = activeQuestion.geoTimerSeconds ?? 10;
       setGeoTimerUsed(true);
       setGeoCountdown(duration);
@@ -360,13 +373,18 @@ export default function GameBoardPage() {
         ? getLyricsTeamId()
         : lastGuessTeamId || selectedTeamId || getBoardTeamId();
 
+    const geoguessValue =
+      activeQuestion.type === "geoguesser"
+        ? Math.max(0, geoPotential)
+        : activeQuestion.points;
+
     if (teamIdToScore) {
       setTeams((prev) =>
         prev.map((team) =>
           team.id === teamIdToScore
             ? {
                 ...team,
-                score: team.score + (correct ? activeQuestion.points : -activeQuestion.points),
+                score: team.score + (correct ? geoguessValue : -geoguessValue),
               }
             : team,
         ),

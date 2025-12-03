@@ -33,6 +33,7 @@ function buildDefaultQuestions(): Question[] {
         answerLocationUrl: null,
         answerVideoUrl: null,
         answerVideoAutoplay: true,
+        geoUnlockCost: 0,
         jokerCount: 5,
         jokerMin: 1,
         jokerMax: 9,
@@ -125,6 +126,7 @@ export default function QuestionConfigPage() {
           answerLocationUrl: null,
           answerVideoUrl: null,
           answerVideoAutoplay: true,
+          geoUnlockCost: 0,
           jokerCount: 5,
           jokerMin: 1,
           jokerMax: 9,
@@ -162,9 +164,10 @@ export default function QuestionConfigPage() {
         lyricsSegments: [],
         mapEmbedUrl: null,
         answerLocationLabel: null,
-        answerLocationUrl: null,
+          answerLocationUrl: null,
           answerVideoUrl: null,
           answerVideoAutoplay: true,
+          geoUnlockCost: 0,
           jokerCount: 5,
           jokerMin: 1,
           jokerMax: 9,
@@ -628,6 +631,7 @@ const GeoguesserFields = React.memo(function GeoguesserFields({
   const [answer, setAnswer] = useState(q?.answer ?? "");
   const [answerLink, setAnswerLink] = useState(q?.answerLocationUrl ?? "");
   const [timerSeconds, setTimerSeconds] = useState<number>(q?.geoTimerSeconds ?? 10);
+  const [unlockCost, setUnlockCost] = useState<number>(q?.geoUnlockCost ?? 0);
 
   React.useEffect(() => {
     setPrompt(q?.prompt ?? "");
@@ -635,7 +639,8 @@ const GeoguesserFields = React.memo(function GeoguesserFields({
     setAnswer(q?.answer ?? "");
     setAnswerLink(q?.answerLocationUrl ?? "");
     setTimerSeconds(q?.geoTimerSeconds ?? 10);
-  }, [q?.prompt, q?.mapEmbedUrl, q?.answer, q?.answerLocationUrl, q?.geoTimerSeconds]);
+    setUnlockCost(q?.geoUnlockCost ?? 0);
+  }, [q?.prompt, q?.mapEmbedUrl, q?.answer, q?.answerLocationUrl, q?.geoTimerSeconds, q?.geoUnlockCost]);
 
   return (
     <>
@@ -689,6 +694,23 @@ const GeoguesserFields = React.memo(function GeoguesserFields({
           })
         }
         placeholder="e.g. 10"
+      />
+      <label className="label" style={{ marginTop: "8px" }}>
+        Unlock cost (points)
+      </label>
+      <input
+        className="input"
+        type="number"
+        min={0}
+        step={10}
+        value={unlockCost}
+        onChange={(e) => setUnlockCost(Number(e.target.value))}
+        onBlur={() =>
+          upsertQuestion(category, points, {
+            geoUnlockCost: Number.isFinite(unlockCost) ? unlockCost : 0,
+          })
+        }
+        placeholder="e.g. 50"
       />
       <div style={{ color: "var(--muted)", fontSize: "0.9rem", marginTop: "4px" }}>
         Tip: In Google Maps, pick a spot, go to Street View, click Share → Embed a map → Copy HTML, then paste the src URL here.

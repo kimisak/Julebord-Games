@@ -35,6 +35,7 @@ export type Question = {
   answerVideoUrl?: string | null;
   answerVideoAutoplay?: boolean | null;
   geoTimerSeconds?: number | null;
+  geoUnlockCost?: number | null;
   lyricsRedPattern?: number[];
   jokerNumbers?: number[];
   jokerTargets?: number[];
