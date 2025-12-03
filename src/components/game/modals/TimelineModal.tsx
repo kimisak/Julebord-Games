@@ -16,6 +16,8 @@ type Props = {
   rotateInfo?: boolean;
   penaltyInfo?: number;
   noWinner?: boolean;
+  title?: string | null;
+  centerLabel?: string | null;
 };
 
 export function TimelineModal({
@@ -32,6 +34,8 @@ export function TimelineModal({
   rotateInfo,
   penaltyInfo,
   noWinner,
+  title,
+  centerLabel,
 }: Props) {
   const activeEvent = queue[0];
   const formatYear = (year: number | null | undefined) => {
@@ -42,7 +46,7 @@ export function TimelineModal({
 
   const combined = [
     ...placedLeft.map((e) => ({ ...e, side: "left" as const })),
-    { id: "__center", text: "Center", year: centerYear, side: "center" as const },
+    { id: "__center", text: "Center", year: centerYear, side: "center" as const, timelineText: undefined },
     ...placedRight.map((e) => ({ ...e, side: "right" as const })),
   ].sort((a, b) => (a.year ?? 0) - (b.year ?? 0));
 
@@ -114,7 +118,9 @@ export function TimelineModal({
           >
             Timeline
           </div>
-          <div style={{ fontWeight: 800, fontSize: "2rem" }}>Year {formatYear(centerYear)}</div>
+          {title ? (
+            <div style={{ fontWeight: 800, fontSize: "1.2rem" }}>{title}</div>
+          ) : null}
           {winnerName ? (
             <div style={{ color: "#f2c14f", fontSize: "0.95rem", fontWeight: 700 }}>
               Winner: {winnerName}
@@ -197,7 +203,9 @@ export function TimelineModal({
                   boxShadow: "0 6px 14px rgba(0,0,0,0.25)",
                 }}
               >
-                <div style={{ fontWeight: 800, color: textColor }}>{formatYear(group.year)}</div>
+                <div style={{ fontWeight: 800, color: textColor }}>
+                  {formatYear(group.year)}
+                </div>
                 <div style={{ display: "grid", gap: "6px", marginTop: "6px" }}>
                   {group.events.map((ev, i) => (
                     <div
@@ -210,7 +218,9 @@ export function TimelineModal({
                         paddingTop: "4px",
                       }}
                     >
-                      {ev.side === "center" ? "Center year" : ev.timelineText ?? ev.text}
+                      {ev.side === "center"
+                        ? centerLabel || ev.timelineText || "Center year"
+                        : ev.timelineText ?? ev.text}
                     </div>
                   ))}
                 </div>

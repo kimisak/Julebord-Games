@@ -38,6 +38,8 @@ function buildDefaultQuestions(): Question[] {
         jokerMax: 9,
         jokerIncrement: 100,
         timelineCenterYear: 2000,
+        timelineCenterLabel: "Center year",
+        timelineTitle: "Timeline",
         timelineEvents: [],
         jokerRotateOnMiss: true,
         jokerPenalty: 0,
@@ -130,6 +132,8 @@ export default function QuestionConfigPage() {
           jokerMax: 9,
           jokerIncrement: 100,
           timelineCenterYear: 2000,
+          timelineCenterLabel: "Center year",
+          timelineTitle: "Timeline",
           timelineEvents: [],
           jokerRotateOnMiss: true,
           jokerPenalty: 0,
@@ -170,6 +174,8 @@ export default function QuestionConfigPage() {
           jokerMax: 9,
           jokerIncrement: 100,
           timelineCenterYear: 2000,
+          timelineCenterLabel: "Center year",
+          timelineTitle: "Timeline",
           timelineEvents: [],
           jokerRotateOnMiss: true,
           jokerPenalty: 0,
@@ -969,6 +975,8 @@ const TimelineFields = React.memo(function TimelineFields({
   upsertQuestion,
 }: FieldProps) {
   const [centerYear, setCenterYear] = useState<number>(q?.timelineCenterYear ?? 2000);
+  const [centerLabel, setCenterLabel] = useState<string>(q?.timelineCenterLabel ?? "Center year");
+  const [title, setTitle] = useState<string>(q?.timelineTitle ?? "Timeline");
   const [rotateOnMiss, setRotateOnMiss] = useState<boolean>(q?.timelineRotateOnMiss ?? true);
   const [penalty, setPenalty] = useState<number>(q?.timelinePenalty ?? 0);
   const [bulkEvents, setBulkEvents] = useState(
@@ -985,6 +993,8 @@ const TimelineFields = React.memo(function TimelineFields({
 
   React.useEffect(() => {
     setCenterYear(q?.timelineCenterYear ?? 2000);
+    setCenterLabel(q?.timelineCenterLabel ?? "Center year");
+    setTitle(q?.timelineTitle ?? "Timeline");
     setRotateOnMiss(q?.timelineRotateOnMiss ?? true);
     setPenalty(q?.timelinePenalty ?? 0);
     setBulkEvents(
@@ -1005,11 +1015,17 @@ const TimelineFields = React.memo(function TimelineFields({
     setCenterYear(safe);
     upsertQuestion(category, points, { timelineCenterYear: safe });
   };
+  const persistCenterLabel = () => {
+    upsertQuestion(category, points, { timelineCenterLabel: centerLabel });
+  };
   const persistSettings = () => {
     upsertQuestion(category, points, {
       timelineRotateOnMiss: rotateOnMiss,
       timelinePenalty: penalty,
     });
+  };
+  const persistTitle = () => {
+    upsertQuestion(category, points, { timelineTitle: title });
   };
 
   const parseBulkEvents = (raw: string): Question["timelineEvents"] => {
@@ -1064,6 +1080,26 @@ const TimelineFields = React.memo(function TimelineFields({
         value={centerYear}
         onChange={(e) => setCenterYear(Number(e.target.value))}
         onBlur={persistCenterYear}
+      />
+      <label className="label" style={{ marginTop: "8px" }}>
+        Center label (shown on the timeline)
+      </label>
+      <input
+        className="input"
+        value={centerLabel}
+        onChange={(e) => setCenterLabel(e.target.value)}
+        onBlur={persistCenterLabel}
+        placeholder="Center year"
+      />
+      <label className="label" style={{ marginTop: "8px" }}>
+        Timeline title (shown in modal)
+      </label>
+      <input
+        className="input"
+        value={title}
+        onChange={(e) => setTitle(e.target.value)}
+        onBlur={persistTitle}
+        placeholder="Timeline"
       />
       <div style={{ display: "grid", gap: "8px", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", marginTop: "10px" }}>
         <label

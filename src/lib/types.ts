@@ -45,6 +45,8 @@ export type Question = {
   jokerMax?: number | null;
   jokerIncrement?: number | null;
   timelineCenterYear?: number | null;
+  timelineCenterLabel?: string | null;
+  timelineTitle?: string | null;
   timelineEvents?: TimelineEvent[];
   jokerRotateOnMiss?: boolean | null;
   jokerPenalty?: number | null;

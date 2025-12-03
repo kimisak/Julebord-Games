@@ -219,10 +219,10 @@ export default function GameBoardPage() {
       setTimelinePlacedLeft([]);
       setTimelinePlacedRight([]);
       setTimelineCenterYear(question.timelineCenterYear ?? 2000);
-      setTimelineTeamIndex(0);
-      setTimelineLastCorrectTeamId(null);
-      setTimelineWinnerName(null);
-      setTimelineNoWinner(false);
+    setTimelineTeamIndex(0);
+    setTimelineLastCorrectTeamId(null);
+    setTimelineWinnerName(null);
+    setTimelineNoWinner(false);
       const boardId =
         activeTurnOrder.length > 0
           ? activeTurnOrder[boardTurnIndex % activeTurnOrder.length]
@@ -497,7 +497,12 @@ export default function GameBoardPage() {
     // Build combined sorted timeline including center pivot
     const combined = [
       ...(timelinePlacedLeft ?? []),
-      { id: "__center", year: timelineCenterYear, text: "Center" },
+      {
+        id: "__center",
+        year: timelineCenterYear,
+        text: "Center",
+        timelineText: activeQuestion.timelineCenterLabel ?? "Center year",
+      },
       ...(timelinePlacedRight ?? []),
     ].sort((a, b) => (a.year ?? 0) - (b.year ?? 0));
 
@@ -687,6 +692,8 @@ export default function GameBoardPage() {
           rotateInfo={activeQuestion.timelineRotateOnMiss ?? true}
           penaltyInfo={activeQuestion.timelinePenalty ?? 0}
           noWinner={timelineNoWinner}
+          title={activeQuestion.timelineTitle}
+          centerLabel={activeQuestion.timelineCenterLabel}
         />
       );
     }
