@@ -1,5 +1,6 @@
 'use client';
 
+import { useMemo } from "react";
 import type { Question, Team } from "@/lib/types";
 
 type Props = {
@@ -21,6 +22,15 @@ export function McqModal({
   onClose,
 }: Props) {
   const options = question.mcqOptions?.slice(0, 4) ?? [];
+  const palette = ["#d94444", "#2c9b61", "#8a5adf", "#f2c14f"];
+  const optionColors = useMemo(() => {
+    const arr = [...palette];
+    for (let i = arr.length - 1; i > 0; i -= 1) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr.slice(0, options.length);
+  }, [question.id, options.length]);
 
   return (
     <div
@@ -82,6 +92,7 @@ export function McqModal({
       <div style={{ display: "grid", gap: "10px" }}>
         {options.map((opt, idx) => {
           const disabled = eliminated.includes(idx);
+          const bg = optionColors[idx] ?? "rgba(255,255,255,0.08)";
           return (
             <button
               key={idx}
@@ -102,14 +113,16 @@ export function McqModal({
                   textAlign: "center",
                   borderRadius: "999px",
                   padding: "4px 8px",
-                  background: "rgba(255,255,255,0.08)",
-                  marginRight: "10px",
-                  fontWeight: 800,
-                }}
-              >
-                {String.fromCharCode(65 + idx)}
-              </span>
-              {opt || "(empty option)"}
+                background: bg,
+                marginRight: "10px",
+                fontWeight: 800,
+                color: "#0b0d13",
+                boxShadow: "0 4px 12px rgba(0,0,0,0.3)",
+              }}
+            >
+              {String.fromCharCode(65 + idx)}
+            </span>
+            {opt || "(empty option)"}
             </button>
           );
         })}
