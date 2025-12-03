@@ -4,6 +4,11 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { BoardGrid } from "@/components/game/BoardGrid";
 import { Leaderboard } from "@/components/game/Leaderboard";
 import { GeoguesserModal } from "@/components/game/modals/GeoguesserModal";
+import {
+  JokerModal,
+  type JokerProgress,
+  type JokerRound,
+} from "@/components/game/modals/JokerModal";
 import { LyricsModal } from "@/components/game/modals/LyricsModal";
 import { StandardModal } from "@/components/game/modals/StandardModal";
 import { useAudioCue } from "@/hooks/useAudioCue";
@@ -15,7 +20,14 @@ import { type Question, type Team } from "@/lib/types";
 
 type ActiveQuestion = Question & { category: string };
 export default function GameBoardPage() {
-  const { playSadBlip, playCountdownBeep, playFinalAlarm } = useAudioCue();
+  const {
+    playSadBlip,
+    playCountdownBeep,
+    playFinalAlarm,
+    playSuccessChime,
+    playDownbeat,
+    playBigWin,
+  } = useAudioCue();
   const [teams, setTeams] = usePersistentState<Team[]>(TEAM_STORAGE_KEY, []);
   const [questions, setQuestions] = usePersistentState<Question[]>(
     QUESTION_STORAGE_KEY,
@@ -32,6 +44,9 @@ export default function GameBoardPage() {
   const [mapLocked, setMapLocked] = useState(true);
   const [geoCountdown, setGeoCountdown] = useState<number | null>(null);
   const [geoTimerUsed, setGeoTimerUsed] = useState(false);
+  const [jokerRound, setJokerRound] = useState<JokerRound | null>(null);
+  const [jokerProgress, setJokerProgress] = useState<JokerProgress | null>(null);
+  const [showJokerConfetti, setShowJokerConfetti] = useState(false);
   const prevAnsweringTeamRef = useRef<string | null>(null);
 
   const { turnState, setOrder, advanceBoard, advanceLyrics } = useTurnState();
@@ -103,6 +118,8 @@ export default function GameBoardPage() {
   };
 
   const openQuestion = (question: Question) => {
+    setJokerRound(null);
+    setJokerProgress(null);
     let normalized = question;
     if (question.type === "lyrics") {
       const pattern = generateRedPattern(question.lyricsSegments?.length ?? 0);
@@ -112,6 +129,50 @@ export default function GameBoardPage() {
     if (question.type === "geoguesser") {
       const duration = question.geoTimerSeconds ?? 10;
       normalized = { ...question, geoTimerSeconds: duration };
+    }
+    if (question.type === "joker") {
+      const count = Math.max(3, Math.min(9, question.jokerCount ?? 5));
+      let minVal = Number.isFinite(question.jokerMin) ? Number(question.jokerMin) : 1;
+      let maxVal = Number.isFinite(question.jokerMax) ? Number(question.jokerMax) : 9;
+      if (minVal >= maxVal) {
+        maxVal = minVal + 1;
+      }
+      const increment = Math.max(10, Math.min(1000, question.jokerIncrement ?? 100));
+      const rand = (min: number, max: number) =>
+        Math.floor(Math.random() * (max - min + 1)) + min;
+      const numbers = Array.from({ length: count }, () => rand(minVal, maxVal));
+      const targets = numbers.map((num) => {
+        let target = rand(minVal, maxVal);
+        let attempts = 0;
+        while (target === num && attempts < 10) {
+          target = rand(minVal, maxVal);
+          attempts += 1;
+        }
+        if (target === num) {
+          target = num === maxVal ? num - 1 : num + 1;
+        }
+        return target;
+      });
+      const correctDirs = targets.map((target, idx) =>
+        target > numbers[idx] ? "above" : "below",
+      );
+      const jokerIndex = Math.floor(Math.random() * numbers.length);
+      const jokerPosition = Math.random() < 0.5 ? "above" : "below";
+      setJokerRound({
+        numbers,
+        targets,
+        correctDirs,
+        jokerIndex,
+        jokerPosition,
+        increment,
+      });
+      setJokerProgress({
+        currentIndex: 0,
+        results: new Array(numbers.length).fill("pending"),
+        score: question.points,
+        finished: false,
+        chosenPositions: new Array(numbers.length).fill(null),
+      });
     }
     setActiveQuestion(normalized);
     setShowAnswer(false);
@@ -146,6 +207,9 @@ export default function GameBoardPage() {
     setLyricsPattern([]);
     setGeoCountdown(null);
     setGeoTimerUsed(false);
+    setJokerRound(null);
+    setJokerProgress(null);
+    setShowJokerConfetti(false);
   };
 
   const handleRevealLine = (idx: number) => {
@@ -260,6 +324,90 @@ export default function GameBoardPage() {
     closeModal();
   };
 
+  const getMaxJokerScore = () => {
+    if (activeQuestion?.type === "joker" && jokerRound) {
+      const base = activeQuestion.points ?? 0;
+      return base + jokerRound.numbers.length * jokerRound.increment;
+    }
+    return (activeQuestion?.points ?? 0) + 5 * 100;
+  };
+
+  const handleJokerGuess = (position: "above" | "below") => {
+    if (!activeQuestion || activeQuestion.type !== "joker") return;
+    if (!jokerRound || !jokerProgress || jokerProgress.finished) return;
+    const step = jokerProgress.currentIndex;
+    const total = jokerRound.numbers.length;
+    const idx = total - 1 - step; // start from rightmost, move left
+    if (idx < 0 || idx >= total) return;
+
+    const nextResults = [...jokerProgress.results];
+    const nextChosen = [...jokerProgress.chosenPositions];
+    nextChosen[idx] = position;
+
+    if (
+      jokerRound.jokerIndex === idx &&
+      jokerRound.jokerPosition === position
+    ) {
+      nextResults[idx] = "joker";
+      playBigWin();
+      setShowJokerConfetti(true);
+      setJokerProgress({
+        currentIndex: step + 1,
+        results: nextResults,
+        score: getMaxJokerScore(),
+        finished: true,
+        chosenPositions: nextChosen,
+      });
+      return;
+    }
+
+    const correct = jokerRound.correctDirs[idx] === position;
+    nextResults[idx] = correct ? "correct" : "wrong";
+    if (correct) {
+      playSuccessChime();
+    } else {
+      playDownbeat();
+    }
+    const delta = correct ? jokerRound.increment : -jokerRound.increment;
+    const updatedScore = Math.max(
+      0,
+      Math.min(getMaxJokerScore(), (jokerProgress.score ?? 0) + delta),
+    );
+    const nextIndex = step + 1;
+    setJokerProgress({
+      currentIndex: nextIndex,
+      results: nextResults,
+      score: updatedScore,
+      finished: nextIndex >= total,
+      chosenPositions: nextChosen,
+    });
+  };
+
+  const finishJokerQuestion = () => {
+    if (!activeQuestion || activeQuestion.type !== "joker") return;
+    if (!jokerProgress) return;
+    const teamId = answeringTeamId;
+    if (teamId) {
+      setTeams((prev) =>
+        prev.map((team) =>
+          team.id === teamId
+            ? { ...team, score: team.score + Math.max(0, jokerProgress.score) }
+            : team,
+        ),
+      );
+    }
+    setQuestions((prev) =>
+      prev.map((q) =>
+        q.id === activeQuestion.id ? { ...q, answered: true } : q,
+      ),
+    );
+    if (activeTurnOrder.length > 0) {
+      advanceBoard();
+    }
+    setLastGuessTeamId("");
+    closeModal();
+  };
+
   const adjustScore = (teamId: string, delta: number) => {
     setTeams((prev) =>
       prev.map((team) =>
@@ -329,7 +477,24 @@ export default function GameBoardPage() {
         />
       );
     }
-  return (
+    if (activeQuestion.type === "joker" && jokerRound && jokerProgress) {
+      return (
+        <JokerModal
+          question={activeQuestion}
+          teams={teams}
+          currentTeamName={currentTeam?.name}
+          answeringTeamName={answeringTeam?.name}
+          round={jokerRound}
+          progress={jokerProgress}
+          onGuess={handleJokerGuess}
+          onFinish={finishJokerQuestion}
+          onClose={closeModal}
+          disableActions={!answeringTeam}
+          maxScore={getMaxJokerScore()}
+        />
+      );
+    }
+    return (
       <StandardModal
         question={activeQuestion}
         teams={teams}
@@ -430,6 +595,27 @@ export default function GameBoardPage() {
           }}
           onClick={closeModal}
         >
+          {showJokerConfetti && (
+            <div
+              style={{
+                position: "fixed",
+                inset: 0,
+                pointerEvents: "none",
+                zIndex: 25,
+              }}
+              aria-hidden
+            >
+              <div
+                style={{
+                  position: "absolute",
+                  inset: 0,
+                  background:
+                    "radial-gradient(circle at 20% 20%, rgba(255,255,255,0.16), transparent 30%), radial-gradient(circle at 80% 30%, rgba(255,255,255,0.2), transparent 30%), radial-gradient(circle at 50% 60%, rgba(255,215,0,0.25), transparent 30%)",
+                  animation: "joker-confetti 1.2s ease-out forwards",
+                }}
+              />
+            </div>
+          )}
           <div
             style={{
               position: "relative",
@@ -509,6 +695,20 @@ export default function GameBoardPage() {
           100% {
             transform: scale(1);
             box-shadow: 0 0 0 rgba(255, 255, 255, 0);
+          }
+        }
+        @keyframes joker-confetti {
+          0% {
+            opacity: 1;
+            transform: scale(1);
+          }
+          70% {
+            opacity: 0.8;
+            transform: scale(1.08);
+          }
+          100% {
+            opacity: 0;
+            transform: scale(1.16);
           }
         }
       `}</style>
