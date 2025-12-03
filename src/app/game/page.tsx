@@ -67,6 +67,7 @@ export default function GameBoardPage() {
   const [showFinalLeaderboard, setShowFinalLeaderboard] = useState(false);
   const [finalLeaderboardShown, setFinalLeaderboardShown] = useState(false);
   const [mcqEliminated, setMcqEliminated] = useState<number[]>([]);
+  const [mcqResolved, setMcqResolved] = useState(false);
   const prevAnsweringTeamRef = useRef<string | null>(null);
 
   const { turnState, setOrder, advanceBoard, advanceLyrics, setTurnState } = useTurnState();
@@ -178,6 +179,7 @@ export default function GameBoardPage() {
       setLyricsPattern(pattern);
       setTurnState((prev) => ({ ...prev, lyricsIndex: prev.boardIndex }));
       setMcqEliminated([]);
+      setMcqResolved(false);
     }
     if (question.type === "geoguesser") {
       const duration = question.geoTimerSeconds ?? 10;
@@ -291,6 +293,7 @@ export default function GameBoardPage() {
     setShowJokerConfetti(false);
     resetTimelineState();
     setMcqEliminated([]);
+    setMcqResolved(false);
   };
 
   const handleRevealLine = (idx: number) => {
@@ -530,6 +533,7 @@ export default function GameBoardPage() {
     const opts = activeQuestion.mcqOptions ?? [];
     if (!opts.length) return;
     if (mcqEliminated.includes(idx)) return;
+    if (mcqResolved) return;
     const currentTeamId = lastGuessTeamId || selectedTeamId || getBoardTeamId();
     if (currentTeamId) {
       setLastGuessTeamId(currentTeamId);
@@ -537,7 +541,24 @@ export default function GameBoardPage() {
     const correctIdx = activeQuestion.mcqCorrectIndex ?? 0;
     const isCorrect = idx === correctIdx;
     if (isCorrect) {
-      markAnswered(true);
+      if (currentTeamId) {
+        setTeams((prev) =>
+          prev.map((team) =>
+            team.id === currentTeamId
+              ? { ...team, score: team.score + (activeQuestion.points ?? 0) }
+              : team,
+          ),
+        );
+      }
+      setQuestions((prev) =>
+        prev.map((q) =>
+          q.id === activeQuestion.id ? { ...q, answered: true } : q,
+        ),
+      );
+      if (activeTurnOrder.length > 0) {
+        advanceBoard();
+      }
+      setMcqResolved(true);
     } else {
       setMcqEliminated((prev) => [...prev, idx]);
       const rotate =
@@ -734,6 +755,8 @@ export default function GameBoardPage() {
           eliminated={mcqEliminated}
           onSelect={handleMcqSelect}
           onClose={closeModal}
+          resolved={mcqResolved}
+          correctIndex={activeQuestion.mcqCorrectIndex ?? 0}
         />
       );
     }

@@ -9,6 +9,8 @@ type Props = {
   currentTeamName?: string;
   answeringTeamName?: string;
   eliminated: number[];
+  resolved?: boolean;
+  correctIndex?: number;
   onSelect: (idx: number) => void;
   onClose: () => void;
 };
@@ -18,6 +20,8 @@ export function McqModal({
   currentTeamName,
   answeringTeamName,
   eliminated,
+  resolved = false,
+  correctIndex = 0,
   onSelect,
   onClose,
 }: Props) {
@@ -92,18 +96,19 @@ export function McqModal({
       <div style={{ display: "grid", gap: "10px" }}>
         {options.map((opt, idx) => {
           const disabled = eliminated.includes(idx);
+          const isCorrect = resolved && idx === correctIndex;
           const bg = optionColors[idx] ?? "rgba(255,255,255,0.08)";
           return (
             <button
               key={idx}
               className="button secondary"
-              disabled={disabled}
+              disabled={disabled || resolved}
               onClick={() => onSelect(idx)}
               style={{
                 justifyContent: "flex-start",
                 alignItems: "stretch",
                 opacity: disabled ? 0.6 : 1,
-                cursor: disabled ? "not-allowed" : "pointer",
+                cursor: disabled || resolved ? "not-allowed" : "pointer",
                 fontSize: "1.05rem",
                 gap: "12px",
                 padding: 0,
@@ -112,6 +117,7 @@ export function McqModal({
                 boxShadow: disabled ? "none" : "0 10px 24px rgba(0,0,0,0.35)",
                 color: "#fdfdfd",
                 overflow: "hidden",
+                outline: isCorrect ? `2px solid #6ee7b7` : undefined,
               }}
             >
               <span
@@ -145,7 +151,11 @@ export function McqModal({
         })}
       </div>
       <div style={{ color: "var(--muted)", marginTop: "12px", fontSize: "0.95rem" }}>
-        Wrong answers pass to the next team. First correct wins the points.
+        {resolved ? (
+          <span style={{ color: "#6ee7b7", fontWeight: 700 }}>Correct! Close when ready.</span>
+        ) : (
+          "Wrong answers pass to the next team. First correct wins the points."
+        )}
       </div>
     </div>
   );
