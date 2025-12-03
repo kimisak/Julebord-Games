@@ -84,7 +84,7 @@ const McqFields = React.memo(function McqFields({
     upsertQuestion(category, points, {
       mcqOptions: trimmed,
       mcqCorrectIndex: boundedCorrect,
-      mcqRotateOnMiss: rotateOnMiss,
+      mcqRotateOnMiss: count >= 4 ? rotateOnMiss : false,
     });
   };
 
