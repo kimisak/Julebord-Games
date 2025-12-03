@@ -291,7 +291,7 @@ export function GeoguesserModal({
                     borderRadius: "12px",
                     overflow: "hidden",
                     border: "1px solid rgba(255,255,255,0.12)",
-                    height: "320px",
+                    height: "420px",
                     position: "relative",
                     background: "rgba(255,255,255,0.04)",
                   }}
@@ -300,9 +300,9 @@ export function GeoguesserModal({
                     src={question.mapEmbedUrl}
                     style={{
                       width: "100%",
-                      height: "620px",
+                      height: "900px",
                       border: "0",
-                      marginTop: "-150px",
+                      marginTop: "-220px",
                       pointerEvents: "auto",
                     }}
                     allowFullScreen
