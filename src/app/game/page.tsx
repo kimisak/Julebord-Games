@@ -550,8 +550,16 @@ export default function GameBoardPage() {
       let winner: string | null = null;
       if (correct) {
         winner = currentTeamId;
-      } else if (!rotateOnMiss) {
-        winner = currentTeamId;
+      } else {
+        const orderList =
+          turnOrder.length > 0 ? activeTurnOrder : teams.map((t) => t.id);
+        if (orderList.length > 0) {
+          const nextIdx =
+            orderList.findIndex((id) => id === currentTeamId) >= 0
+              ? (orderList.findIndex((id) => id === currentTeamId) + 1) % orderList.length
+              : 0;
+          winner = orderList[nextIdx];
+        }
       }
 
       if (winner) {

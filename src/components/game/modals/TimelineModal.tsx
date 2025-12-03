@@ -133,28 +133,6 @@ export function TimelineModal({
             </div>
           ) : null}
         </div>
-        {(potentialScore || basePoints) && (
-          <div
-            style={{
-              borderRadius: "12px",
-              padding: "8px 12px",
-              border: "1px solid rgba(255,255,255,0.16)",
-              background: "rgba(255,255,255,0.05)",
-              display: "grid",
-              gap: "4px",
-              minWidth: "140px",
-              textAlign: "right",
-            }}
-          >
-            <div style={{ color: "var(--muted)", fontSize: "0.9rem" }}>Question score</div>
-            {basePoints !== null && basePoints !== undefined ? (
-              <div style={{ fontWeight: 700 }}>Base: {basePoints}</div>
-            ) : null}
-            {potentialScore !== null && potentialScore !== undefined ? (
-              <div style={{ fontWeight: 700, color: "#f2c14f" }}>Current: {potentialScore}</div>
-            ) : null}
-          </div>
-        )}
       </div>
 
       <div
