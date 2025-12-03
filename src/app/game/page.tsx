@@ -1087,8 +1087,9 @@ export default function GameBoardPage() {
       `}</style>
     </main>
   );
-}
-  const closeFinalLeaderboard = () => {
+
+  function closeFinalLeaderboard() {
     setShowFinalLeaderboard(false);
     setFinalLeaderboardShown(true);
-  };
+  }
+}
