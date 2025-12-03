@@ -158,21 +158,23 @@ const McqFields = React.memo(function McqFields({
           </div>
         ))}
       </div>
-      <label className="label" style={{ marginTop: "10px", display: "flex", alignItems: "center", gap: "8px" }}>
-        <input
-          type="checkbox"
-          checked={rotateOnMiss}
-          onChange={(e) => {
-            const next = e.target.checked;
-            setRotateOnMiss(next);
-            persist(options, correctIndex, optionCount);
-          }}
-          style={{ width: "16px", height: "16px" }}
-        />
-        Rotate teams on wrong answer
-      </label>
+      {optionCount === 4 && (
+        <label className="label" style={{ marginTop: "10px", display: "flex", alignItems: "center", gap: "8px" }}>
+          <input
+            type="checkbox"
+            checked={rotateOnMiss}
+            onChange={(e) => {
+              const next = e.target.checked;
+              setRotateOnMiss(next);
+              persist(options, correctIndex, optionCount);
+            }}
+            style={{ width: "16px", height: "16px" }}
+          />
+          Rotate teams on wrong answer
+        </label>
+      )}
       <div style={{ color: "var(--muted)", fontSize: "0.9rem", marginTop: "6px" }}>
-        Two or four options. If rotation is on, wrong answers pass to the next team; first correct wins the points.
+        Two or four options. If rotation is on (only for 4-option mode), wrong answers pass to the next team; first correct wins the points.
       </div>
     </>
   );

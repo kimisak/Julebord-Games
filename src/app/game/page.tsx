@@ -540,7 +540,10 @@ export default function GameBoardPage() {
       markAnswered(true);
     } else {
       setMcqEliminated((prev) => [...prev, idx]);
-      const rotate = activeQuestion.mcqRotateOnMiss ?? true;
+      const rotate =
+        (activeQuestion.mcqOptions?.length ?? 0) >= 4
+          ? activeQuestion.mcqRotateOnMiss ?? true
+          : false;
       if (rotate && activeTurnOrder.length > 0) {
         advanceBoard();
         const nextId =
