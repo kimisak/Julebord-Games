@@ -920,7 +920,7 @@ export default function GameBoardPage() {
                   All questions answered
                 </div>
                 <h2 style={{ margin: "6px 0 2px", fontSize: "2.2rem" }}>Final leaderboard</h2>
-                <div style={{ color: "var(--muted)" }}>Tap anywhere outside to close</div>
+                <div style={{ color: "var(--muted)" }}>Tap outside or hit close</div>
               </div>
               <div
                 style={{
@@ -938,6 +938,14 @@ export default function GameBoardPage() {
               >
                 🏁
               </div>
+              <button
+                className="button ghost"
+                onClick={() => setShowFinalLeaderboard(false)}
+                style={{ marginLeft: "12px", whiteSpace: "nowrap" }}
+                aria-label="Close final leaderboard"
+              >
+                Close
+              </button>
             </div>
             <div style={{ marginTop: "18px", display: "grid", gap: "12px" }}>
               {sortedTeams.slice(0, 3).map((team, idx) => {
