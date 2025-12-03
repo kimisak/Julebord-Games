@@ -611,6 +611,7 @@ export default function GameBoardPage() {
                 ? orderList[(currentIdx + 1) % orderList.length]
                 : orderList[0];
             setSelectedTeamId(nextId);
+            setLastGuessTeamId(nextId);
             if (activeTurnOrder.length > 0) {
               advanceBoard();
             }
