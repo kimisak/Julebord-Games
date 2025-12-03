@@ -68,6 +68,10 @@ export default function GameBoardPage() {
   const [finalLeaderboardShown, setFinalLeaderboardShown] = useState(false);
   const [mcqEliminated, setMcqEliminated] = useState<number[]>([]);
   const [mcqResolved, setMcqResolved] = useState(false);
+  const [mcqResolvedInfo, setMcqResolvedInfo] = useState<{
+    teamName: string;
+    points: number;
+  } | null>(null);
   const prevAnsweringTeamRef = useRef<string | null>(null);
 
   const { turnState, setOrder, advanceBoard, advanceLyrics, setTurnState } = useTurnState();
@@ -294,6 +298,7 @@ export default function GameBoardPage() {
     resetTimelineState();
     setMcqEliminated([]);
     setMcqResolved(false);
+    setMcqResolvedInfo(null);
   };
 
   const handleRevealLine = (idx: number) => {
@@ -543,13 +548,19 @@ export default function GameBoardPage() {
     if (isCorrect) {
       playSuccessChime();
       if (currentTeamId) {
+        const awarded = activeQuestion.points ?? 0;
         setTeams((prev) =>
           prev.map((team) =>
             team.id === currentTeamId
-              ? { ...team, score: team.score + (activeQuestion.points ?? 0) }
+              ? { ...team, score: team.score + awarded }
               : team,
           ),
         );
+        const winnerTeam = teams.find((t) => t.id === currentTeamId);
+        setMcqResolvedInfo({
+          teamName: winnerTeam?.name ?? "Team",
+          points: awarded,
+        });
       }
       setQuestions((prev) =>
         prev.map((q) =>
@@ -759,6 +770,7 @@ export default function GameBoardPage() {
           onClose={closeModal}
           resolved={mcqResolved}
           correctIndex={activeQuestion.mcqCorrectIndex ?? 0}
+          resolvedInfo={mcqResolvedInfo}
         />
       );
     }

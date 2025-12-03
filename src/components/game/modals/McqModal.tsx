@@ -11,6 +11,7 @@ type Props = {
   eliminated: number[];
   resolved?: boolean;
   correctIndex?: number;
+  resolvedInfo?: { teamName: string; points: number } | null;
   onSelect: (idx: number) => void;
   onClose: () => void;
 };
@@ -22,6 +23,7 @@ export function McqModal({
   eliminated,
   resolved = false,
   correctIndex = 0,
+  resolvedInfo = null,
   onSelect,
   onClose,
 }: Props) {
@@ -160,7 +162,9 @@ export function McqModal({
       </div>
       <div style={{ color: "var(--muted)", marginTop: "12px", fontSize: "0.95rem" }}>
         {resolved ? (
-          <span style={{ color: "#6ee7b7", fontWeight: 700 }}>Correct! Close when ready.</span>
+          <span style={{ color: "#6ee7b7", fontWeight: 700 }}>
+            Correct! {resolvedInfo ? `${resolvedInfo.teamName} +${resolvedInfo.points} pts` : "Close when ready."}
+          </span>
         ) : (
           "Wrong answers pass to the next team. First correct wins the points."
         )}
