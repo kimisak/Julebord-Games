@@ -110,6 +110,7 @@ export function McqModal({
           const disabled = eliminated.includes(idx);
           const isCorrect = resolved && idx === correctIndex;
           const bg = optionColors[idx] ?? "rgba(255,255,255,0.08)";
+          const isResolvedWrong = resolved && idx !== correctIndex;
           return (
             <button
               key={idx}
@@ -119,7 +120,7 @@ export function McqModal({
               style={{
                 justifyContent: "flex-start",
                 alignItems: "stretch",
-                opacity: disabled ? 0.6 : 1,
+                opacity: disabled ? 0.6 : isResolvedWrong ? 0.45 : 1,
                 cursor: disabled || resolved ? "not-allowed" : "pointer",
                 fontSize: "1.2rem",
                 gap: "12px",
@@ -131,6 +132,7 @@ export function McqModal({
                 overflow: "hidden",
                 outline: isCorrect ? `2px solid #6ee7b7` : undefined,
                 minHeight: "82px",
+                filter: isResolvedWrong ? "grayscale(0.15)" : "none",
               }}
             >
               <span
