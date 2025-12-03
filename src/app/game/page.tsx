@@ -576,7 +576,8 @@ export default function GameBoardPage() {
       setMcqResolved(true);
     } else {
       playDownbeat();
-      if (!hasFour) {
+      const rotateEnabled = activeQuestion.mcqRotateOnMiss ?? true;
+      if (!hasFour || !rotateEnabled) {
         if (currentTeamId) {
           const penalty = activeQuestion.points ?? 0;
           setTeams((prev) =>
