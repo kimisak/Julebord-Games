@@ -178,7 +178,11 @@ export default function GameBoardPage() {
       if (minVal >= maxVal) {
         maxVal = minVal + 1;
       }
-      const increment = Math.max(10, Math.min(1000, question.jokerIncrement ?? 100));
+      const basePoints = question.points ?? 0;
+      const maxScore = basePoints * 2;
+      const computedIncrement =
+        count > 0 ? Math.max(0, Math.round((maxScore - basePoints) / count)) : 0;
+      const increment = computedIncrement;
       const rand = (min: number, max: number) =>
         Math.floor(Math.random() * (max - min + 1)) + min;
       const numbers = Array.from({ length: count }, () => rand(minVal, maxVal));
@@ -210,7 +214,7 @@ export default function GameBoardPage() {
       setJokerProgress({
         currentIndex: 0,
         results: new Array(numbers.length).fill("pending"),
-        score: question.points,
+        score: basePoints,
         finished: false,
         chosenPositions: new Array(numbers.length).fill(null),
       });
@@ -384,11 +388,8 @@ export default function GameBoardPage() {
   };
 
   const getMaxJokerScore = () => {
-    if (activeQuestion?.type === "joker" && jokerRound) {
-      const base = activeQuestion.points ?? 0;
-      return base + jokerRound.numbers.length * (jokerRound.increment ?? 0);
-    }
-    return (activeQuestion?.points ?? 0) + 5 * 100;
+    const base = activeQuestion?.points ?? 0;
+    return base * 2;
   };
 
   const handleJokerGuess = (position: "above" | "below") => {
@@ -431,8 +432,9 @@ export default function GameBoardPage() {
     }
     const incrementVal = jokerRound.increment ?? 0;
     const delta = correct ? incrementVal : -incrementVal;
+    const basePoints = activeQuestion.points ?? 0;
     const updatedScore = Math.max(
-      0,
+      basePoints,
       Math.min(getMaxJokerScore(), (jokerProgress.score ?? 0) + delta),
     );
     const nextIndex = step + 1;
