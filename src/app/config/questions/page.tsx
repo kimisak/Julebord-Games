@@ -902,6 +902,15 @@ const JokerFields = React.memo(function JokerFields({
           />
         </div>
       </div>
+      <div
+        style={{
+          marginTop: "6px",
+          color: "var(--muted)",
+          fontSize: "0.9rem",
+        }}
+      >
+        Points per correct guess are auto-calculated from the question score and circle count.
+      </div>
       <div style={{ display: "grid", gap: "8px", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", marginTop: "10px" }}>
         <label
           className="label"
