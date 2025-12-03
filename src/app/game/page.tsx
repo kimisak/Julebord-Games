@@ -88,6 +88,10 @@ export default function GameBoardPage() {
     () => [...teams].sort((a, b) => b.score - a.score),
     [teams],
   );
+  const boardComplete = useMemo(
+    () => questions.length > 0 && questions.every((q) => q.answered),
+    [questions],
+  );
   const activeTurnOrder = useMemo(
     () => turnOrder.filter((id) => teams.some((t) => t.id === id)),
     [turnOrder, teams],
@@ -814,6 +818,17 @@ export default function GameBoardPage() {
       </section>
 
       <Leaderboard teams={sortedTeams} onAdjust={adjustScore} onSet={setScore} />
+      {boardComplete && finalLeaderboardShown && !showFinalLeaderboard && (
+        <div style={{ display: "flex", justifyContent: "center" }}>
+          <button
+            className="button primary"
+            onClick={() => setShowFinalLeaderboard(true)}
+            style={{ marginTop: "-6px" }}
+          >
+            Show podium again
+          </button>
+        </div>
+      )}
 
       {activeQuestion && (
         <div
