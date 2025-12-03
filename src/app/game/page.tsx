@@ -176,14 +176,15 @@ export default function GameBoardPage() {
     setJokerRound(null);
     setJokerProgress(null);
     resetTimelineState();
+    setMcqEliminated([]);
+    setMcqResolved(false);
+    setMcqResolvedInfo(null);
     let normalized = question;
     if (question.type === "lyrics") {
       const pattern = generateRedPattern(question.lyricsSegments?.length ?? 0);
       normalized = { ...question, lyricsRedPattern: pattern };
       setLyricsPattern(pattern);
       setTurnState((prev) => ({ ...prev, lyricsIndex: prev.boardIndex }));
-      setMcqEliminated([]);
-      setMcqResolved(false);
     }
     if (question.type === "geoguesser") {
       const duration = question.geoTimerSeconds ?? 10;
@@ -545,6 +546,8 @@ export default function GameBoardPage() {
     }
     const correctIdx = activeQuestion.mcqCorrectIndex ?? 0;
     const isCorrect = idx === correctIdx;
+    const hasFour =
+      opts.length >= 4 && opts.slice(2).some((o) => (o ?? "").trim() !== "");
     if (isCorrect) {
       playSuccessChime();
       if (currentTeamId) {
@@ -573,18 +576,37 @@ export default function GameBoardPage() {
       setMcqResolved(true);
     } else {
       playDownbeat();
-      setMcqEliminated((prev) => [...prev, idx]);
-      const rotate =
-        (() => {
-          const raw = activeQuestion.mcqOptions ?? [];
-          const hasFour = raw.length >= 4 && raw.slice(2).some((o) => (o ?? "").trim() !== "");
-          return hasFour ? activeQuestion.mcqRotateOnMiss ?? true : false;
-        })();
-      if (rotate && activeTurnOrder.length > 0) {
-        advanceBoard();
-        const nextId =
-          activeTurnOrder[(boardTurnIndex + 1) % activeTurnOrder.length] ?? "";
-        setSelectedTeamId(nextId);
+      if (!hasFour) {
+        if (currentTeamId) {
+          const penalty = activeQuestion.points ?? 0;
+          setTeams((prev) =>
+            prev.map((team) =>
+              team.id === currentTeamId
+                ? { ...team, score: team.score - penalty }
+                : team,
+            ),
+          );
+          const team = teams.find((t) => t.id === currentTeamId);
+          setMcqResolvedInfo({
+            teamName: team?.name ?? "Team",
+            points: -penalty,
+          });
+        }
+        setQuestions((prev) =>
+          prev.map((q) =>
+            q.id === activeQuestion.id ? { ...q, answered: true } : q,
+          ),
+        );
+        setMcqResolved(true);
+      } else {
+        setMcqEliminated((prev) => [...prev, idx]);
+        const rotate = activeQuestion.mcqRotateOnMiss ?? true;
+        if (rotate && activeTurnOrder.length > 0) {
+          advanceBoard();
+          const nextId =
+            activeTurnOrder[(boardTurnIndex + 1) % activeTurnOrder.length] ?? "";
+          setSelectedTeamId(nextId);
+        }
       }
     }
   };

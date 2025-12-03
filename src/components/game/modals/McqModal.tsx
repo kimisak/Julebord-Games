@@ -166,8 +166,17 @@ export function McqModal({
       </div>
       <div style={{ color: "var(--muted)", marginTop: "12px", fontSize: "0.95rem" }}>
         {resolved ? (
-          <span style={{ color: "#6ee7b7", fontWeight: 700 }}>
-            Correct! {resolvedInfo ? `${resolvedInfo.teamName} +${resolvedInfo.points} pts` : "Close when ready."}
+          <span
+            style={{
+              fontWeight: 700,
+              color: resolvedInfo && resolvedInfo.points < 0 ? "#f87171" : "#6ee7b7",
+            }}
+          >
+            {resolvedInfo
+              ? `${resolvedInfo.points >= 0 ? "Correct" : "Wrong"}! ${resolvedInfo.teamName} ${
+                  resolvedInfo.points >= 0 ? "+" : ""
+                }${resolvedInfo.points} pts`
+              : "Close when ready."}
           </span>
         ) : (
           "Wrong answers pass to the next team. First correct wins the points."
