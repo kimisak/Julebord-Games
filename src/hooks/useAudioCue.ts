@@ -67,5 +67,70 @@ export function useAudioCue() {
     osc.stop(now + 1.1);
   };
 
-  return { playSadBlip, playCountdownBeep, playFinalAlarm };
+  const playSuccessChime = () => {
+    const ctx = ensureCtx();
+    if (!ctx) return;
+    const now = ctx.currentTime;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = "sine";
+    osc.frequency.setValueAtTime(660, now);
+    osc.frequency.exponentialRampToValueAtTime(880, now + 0.25);
+    gain.gain.setValueAtTime(0.2, now);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.35);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start(now);
+    osc.stop(now + 0.4);
+  };
+
+  const playDownbeat = () => {
+    const ctx = ensureCtx();
+    if (!ctx) return;
+    const now = ctx.currentTime;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = "triangle";
+    osc.frequency.setValueAtTime(240, now);
+    osc.frequency.exponentialRampToValueAtTime(130, now + 0.25);
+    gain.gain.setValueAtTime(0.2, now);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.3);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start(now);
+    osc.stop(now + 0.32);
+  };
+
+  const playBigWin = () => {
+    const ctx = ensureCtx();
+    if (!ctx) return;
+    const now = ctx.currentTime;
+    const osc1 = ctx.createOscillator();
+    const osc2 = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc1.type = "sine";
+    osc2.type = "sine";
+    osc1.frequency.setValueAtTime(660, now);
+    osc2.frequency.setValueAtTime(990, now);
+    osc1.frequency.exponentialRampToValueAtTime(880, now + 0.35);
+    osc2.frequency.exponentialRampToValueAtTime(1320, now + 0.35);
+    gain.gain.setValueAtTime(0.22, now);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.55);
+    osc1.connect(gain);
+    osc2.connect(gain);
+    gain.connect(ctx.destination);
+    osc1.start(now);
+    osc2.start(now);
+    osc1.stop(now + 0.6);
+    osc2.stop(now + 0.6);
+  };
+
+  return {
+    playSadBlip,
+    playCountdownBeep,
+    playFinalAlarm,
+    playSuccessChime,
+    playDownbeat,
+    playBigWin,
+  };
 }

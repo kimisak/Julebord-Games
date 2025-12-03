@@ -33,6 +33,8 @@ type Props = {
   onClose: () => void;
   disableActions?: boolean;
   maxScore: number;
+  rotateInfo?: boolean;
+  penaltyInfo?: number;
 };
 
 const statusColors: Record<JokerResult, string> = {
@@ -59,6 +61,8 @@ export function JokerModal({
   onClose,
   disableActions,
   maxScore,
+  rotateInfo,
+  penaltyInfo,
 }: Props) {
   const total = round.numbers.length;
   const activeIndex = total - 1 - progress.currentIndex; // start from rightmost
@@ -195,6 +199,10 @@ export function JokerModal({
           </div>
           <div style={{ color: "var(--muted)", fontSize: "0.9rem" }}>
             Guesses left: {guessesLeft}
+          </div>
+          <div style={{ color: "var(--muted)", fontSize: "0.85rem" }}>
+            {rotateInfo ? "Wrong guesses: next team" : "Wrong guesses: same team"}
+            {penaltyInfo && penaltyInfo > 0 ? `, -${penaltyInfo} pts` : ""}
           </div>
         </div>
       </div>

@@ -46,6 +46,10 @@ export type Question = {
   jokerIncrement?: number | null;
   timelineCenterYear?: number | null;
   timelineEvents?: TimelineEvent[];
+  jokerRotateOnMiss?: boolean | null;
+  jokerPenalty?: number | null;
+  timelineRotateOnMiss?: boolean | null;
+  timelinePenalty?: number | null;
 };
 
 export type TeamMap = Record<string, Team>;

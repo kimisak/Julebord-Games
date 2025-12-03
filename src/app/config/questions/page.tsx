@@ -39,6 +39,10 @@ function buildDefaultQuestions(): Question[] {
         jokerIncrement: 100,
         timelineCenterYear: 2000,
         timelineEvents: [],
+        jokerRotateOnMiss: true,
+        jokerPenalty: 0,
+        timelineRotateOnMiss: true,
+        timelinePenalty: 0,
       });
     });
   });
@@ -60,10 +64,8 @@ export default function QuestionConfigPage() {
 
   useEffect(() => {
     if (!isClient) return;
-    if (questions.length === 0) {
-      setQuestions(buildDefaultQuestions());
-    }
-  }, [isClient, questions.length, setQuestions]);
+    // no automatic seeding; keep storage empty if user cleared categories
+  }, [isClient]);
 
   const categories = useMemo(() => {
     const list = isClient ? questions : [];
@@ -129,6 +131,10 @@ export default function QuestionConfigPage() {
           jokerIncrement: 100,
           timelineCenterYear: 2000,
           timelineEvents: [],
+          jokerRotateOnMiss: true,
+          jokerPenalty: 0,
+          timelineRotateOnMiss: true,
+          timelinePenalty: 0,
           ...updates,
         },
       ];
@@ -165,6 +171,10 @@ export default function QuestionConfigPage() {
           jokerIncrement: 100,
           timelineCenterYear: 2000,
           timelineEvents: [],
+          jokerRotateOnMiss: true,
+          jokerPenalty: 0,
+          timelineRotateOnMiss: true,
+          timelinePenalty: 0,
       }));
       return [...prev, ...additions];
     });
@@ -804,13 +814,17 @@ const JokerFields = React.memo(function JokerFields({
   const [minVal, setMinVal] = useState<number>(q?.jokerMin ?? 1);
   const [maxVal, setMaxVal] = useState<number>(q?.jokerMax ?? 9);
   const [increment, setIncrement] = useState<number>(q?.jokerIncrement ?? 100);
+  const [rotateOnMiss, setRotateOnMiss] = useState<boolean>(q?.jokerRotateOnMiss ?? true);
+  const [penalty, setPenalty] = useState<number>(q?.jokerPenalty ?? 0);
 
   React.useEffect(() => {
     setCount(q?.jokerCount ?? 5);
     setMinVal(q?.jokerMin ?? 1);
     setMaxVal(q?.jokerMax ?? 9);
     setIncrement(q?.jokerIncrement ?? 100);
-  }, [q?.jokerCount, q?.jokerMin, q?.jokerMax, q?.jokerIncrement]);
+    setRotateOnMiss(q?.jokerRotateOnMiss ?? true);
+    setPenalty(q?.jokerPenalty ?? 0);
+  }, [q?.jokerCount, q?.jokerMin, q?.jokerMax, q?.jokerIncrement, q?.jokerRotateOnMiss, q?.jokerPenalty]);
 
   const persist = (next: Partial<Question>) =>
     upsertQuestion(category, points, {
@@ -820,10 +834,13 @@ const JokerFields = React.memo(function JokerFields({
   const clampInt = (value: number, min: number, max: number) =>
     Math.min(max, Math.max(min, Math.round(value)));
 
+  const persistSettings = (next: Partial<Question>) =>
+    upsertQuestion(category, points, next);
+
   const handleCountBlur = () => {
     const safe = clampInt(count || 5, 3, 9);
     setCount(safe);
-    persist({ jokerCount: safe });
+    persistSettings({ jokerCount: safe });
   };
 
   const handleRangeBlur = (which: "min" | "max") => {
@@ -837,13 +854,13 @@ const JokerFields = React.memo(function JokerFields({
     }
     setMinVal(nextMin);
     setMaxVal(nextMax);
-    persist({ jokerMin: nextMin, jokerMax: nextMax });
+    persistSettings({ jokerMin: nextMin, jokerMax: nextMax });
   };
 
   const handleIncrementBlur = () => {
     const safe = clampInt(increment || 100, 10, 1000);
     setIncrement(safe);
-    persist({ jokerIncrement: safe });
+    persistSettings({ jokerIncrement: safe });
   };
 
   return (
@@ -911,6 +928,36 @@ const JokerFields = React.memo(function JokerFields({
       <div style={{ marginTop: "6px", color: "var(--muted)", fontSize: "0.9rem" }}>
         Wrong guesses subtract the same amount, down to zero. Joker gives base points + (circles × increment).
       </div>
+      <div style={{ display: "grid", gap: "8px", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", marginTop: "10px" }}>
+        <label
+          className="label"
+          style={{ display: "inline-flex", alignItems: "center", gap: "8px", cursor: "pointer" }}
+        >
+          <input
+            type="checkbox"
+            checked={rotateOnMiss}
+            onChange={(e) => {
+              setRotateOnMiss(e.target.checked);
+              persistSettings({ jokerRotateOnMiss: e.target.checked });
+            }}
+            style={{ width: "16px", height: "16px" }}
+          />
+          Rotate teams on wrong guess
+        </label>
+        <div>
+          <label className="label">Penalty on wrong (deduct from team)</label>
+          <input
+            className="input"
+            type="number"
+            min={0}
+            step={10}
+            value={penalty}
+            onChange={(e) => setPenalty(Number(e.target.value))}
+            onBlur={() => persistSettings({ jokerPenalty: penalty })}
+            placeholder={`${points}`}
+          />
+        </div>
+      </div>
     </>
   );
 });
@@ -922,6 +969,8 @@ const TimelineFields = React.memo(function TimelineFields({
   upsertQuestion,
 }: FieldProps) {
   const [centerYear, setCenterYear] = useState<number>(q?.timelineCenterYear ?? 2000);
+  const [rotateOnMiss, setRotateOnMiss] = useState<boolean>(q?.timelineRotateOnMiss ?? true);
+  const [penalty, setPenalty] = useState<number>(q?.timelinePenalty ?? 0);
   const [bulkEvents, setBulkEvents] = useState(
     (q?.timelineEvents ?? [])
       .map((ev) => {
@@ -932,10 +981,12 @@ const TimelineFields = React.memo(function TimelineFields({
         return `${baseYear} ${era}, ${eventText}, ${timelineText}`;
       })
       .join("\n"),
-  );
+    );
 
   React.useEffect(() => {
     setCenterYear(q?.timelineCenterYear ?? 2000);
+    setRotateOnMiss(q?.timelineRotateOnMiss ?? true);
+    setPenalty(q?.timelinePenalty ?? 0);
     setBulkEvents(
       (q?.timelineEvents ?? [])
         .map((ev) => {
@@ -953,6 +1004,12 @@ const TimelineFields = React.memo(function TimelineFields({
     const safe = Number.isFinite(centerYear) ? Math.round(centerYear) : 2000;
     setCenterYear(safe);
     upsertQuestion(category, points, { timelineCenterYear: safe });
+  };
+  const persistSettings = () => {
+    upsertQuestion(category, points, {
+      timelineRotateOnMiss: rotateOnMiss,
+      timelinePenalty: penalty,
+    });
   };
 
   const parseBulkEvents = (raw: string): Question["timelineEvents"] => {
@@ -1008,6 +1065,34 @@ const TimelineFields = React.memo(function TimelineFields({
         onChange={(e) => setCenterYear(Number(e.target.value))}
         onBlur={persistCenterYear}
       />
+      <div style={{ display: "grid", gap: "8px", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", marginTop: "10px" }}>
+        <label
+          className="label"
+          style={{ display: "inline-flex", alignItems: "center", gap: "8px", cursor: "pointer" }}
+        >
+          <input
+            type="checkbox"
+            checked={rotateOnMiss}
+            onChange={(e) => setRotateOnMiss(e.target.checked)}
+            onBlur={persistSettings}
+            style={{ width: "16px", height: "16px" }}
+          />
+          Rotate teams on wrong guess
+        </label>
+        <div>
+          <label className="label">Penalty on wrong (deduct from team)</label>
+          <input
+            className="input"
+            type="number"
+            min={0}
+            step={10}
+            value={penalty}
+            onChange={(e) => setPenalty(Number(e.target.value))}
+            onBlur={persistSettings}
+            placeholder={`${points}`}
+          />
+        </div>
+      </div>
       <label className="label" style={{ marginTop: "10px" }}>
         Events (one per line: YEAR AC/BC, Event prompt, Timeline text)
       </label>
