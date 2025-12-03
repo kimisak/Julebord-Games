@@ -40,29 +40,25 @@ export function TimelineModal({
     ...placedRight.map((e) => ({ ...e, side: "right" as const })),
   ].sort((a, b) => (a.year ?? 0) - (b.year ?? 0));
 
-  const slots: { label: string; index: number; onYear?: number }[] = [];
-  if (combined.length) {
-    slots.push({ label: `Before ${formatYear(combined[0].year)}`, index: 0 });
-    combined.forEach((item, idx) => {
-      const isCenter = item.id === "__center";
-      slots.push({
-        label: `On ${formatYear(item.year)}`,
-        index: idx,
-        onYear: item.year ?? undefined,
-      });
-      const next = combined[idx + 1];
-      if (next && next.year !== item.year) {
-        slots.push({
-          label: `Between ${formatYear(item.year)} and ${formatYear(next.year)}`,
-          index: idx + 1,
-        });
-      }
-    });
-    slots.push({
-      label: `After ${formatYear(combined[combined.length - 1]?.year ?? centerYear)}`,
-      index: combined.length,
-    });
-  }
+  const renderDropZone = (slot: { index: number; onYear?: number }, size: "thin" | "wide" = "thin") => (
+    <div
+      onDragOver={(e) => e.preventDefault()}
+      onDrop={(e) => {
+        e.preventDefault();
+        if (!disableActions) onPlace(slot);
+      }}
+      style={{
+        minWidth: size === "wide" ? "20px" : "12px",
+        minHeight: "60px",
+        border: "1px dashed rgba(255,255,255,0.18)",
+        borderRadius: "10px",
+        display: "grid",
+        placeItems: "center",
+        padding: size === "wide" ? "8px" : "4px",
+        background: "repeating-linear-gradient(135deg, rgba(255,255,255,0.06) 0, rgba(255,255,255,0.06) 8px, rgba(255,255,255,0.03) 8px, rgba(255,255,255,0.03) 16px)",
+      }}
+    />
+  );
 
   return (
     <div
@@ -125,71 +121,69 @@ export function TimelineModal({
         event. Final correct placement wins the points.
       </div>
 
-      <div style={{ display: "grid", gap: "12px", marginBottom: "12px" }}>
-        <div style={{ display: "flex", gap: "10px", alignItems: "center", flexWrap: "wrap", justifyContent: "center" }}>
-          {combined.map((ev) => (
+      <div style={{ display: "flex", gap: "12px", alignItems: "stretch", flexWrap: "wrap", justifyContent: "center", marginBottom: "12px" }}>
+        {combined.length > 0 && renderDropZone({ index: 0 }, "wide")}
+        {combined.map((ev, idx) => (
+          <div key={ev.id} style={{ display: "flex", alignItems: "center", gap: "8px" }}>
             <div
-              key={ev.id}
+              onDragOver={(e) => e.preventDefault()}
+              onDrop={(e) => {
+                e.preventDefault();
+                if (!disableActions) onPlace({ index: idx, onYear: ev.year ?? undefined });
+              }}
               className="card"
               style={{
                 padding: "8px",
-                minWidth: "110px",
+                minWidth: "120px",
                 textAlign: "center",
-                border: ev.side === "center" ? "2px solid rgba(255,255,255,0.3)" : "1px solid rgba(255,255,255,0.16)",
-                background: ev.side === "center" ? "linear-gradient(135deg, rgba(255,255,255,0.2), rgba(255,255,255,0.08))" : "rgba(255,255,255,0.06)",
+                border:
+                  ev.side === "center"
+                    ? "2px solid rgba(255,255,255,0.3)"
+                    : ev.status === "correct"
+                      ? "2px solid rgba(28,111,77,0.8)"
+                      : ev.status === "wrong"
+                        ? "2px solid rgba(185,28,28,0.8)"
+                        : "1px solid rgba(255,255,255,0.16)",
+                background:
+                  ev.side === "center"
+                    ? "linear-gradient(135deg, rgba(255,255,255,0.2), rgba(255,255,255,0.08))"
+                    : ev.status === "correct"
+                      ? "linear-gradient(135deg, rgba(28,111,77,0.25), rgba(15,90,60,0.4))"
+                      : ev.status === "wrong"
+                        ? "linear-gradient(135deg, rgba(185,28,28,0.28), rgba(127,29,29,0.4))"
+                        : "rgba(255,255,255,0.06)",
                 boxShadow: "0 6px 14px rgba(0,0,0,0.25)",
               }}
             >
               <div style={{ fontWeight: 800 }}>{formatYear(ev.year)}</div>
               <div style={{ color: "var(--muted)", fontSize: "0.9rem" }}>
-                {ev.side === "center" ? "Center year" : ev.text}
+                {ev.side === "center" ? "Center year" : ev.timelineText ?? ev.text}
               </div>
             </div>
-          ))}
-        </div>
-        <div
-          style={{
-            display: "grid",
-            gap: "8px",
-            gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-          }}
-        >
-          {slots.map((label, idx) => (
-            <button
-              key={`${idx}-${slots[idx]?.onYear ?? "slot"}`}
-              className="button ghost"
-              disabled={disableActions}
-              onClick={() => onPlace(slots[idx] ?? { index: idx })}
-              onDragOver={(e) => e.preventDefault()}
-              onDrop={(e) => {
-                e.preventDefault();
-                if (!disableActions) onPlace(slots[idx] ?? { index: idx });
-              }}
-              style={{ width: "100%" }}
-            >
-              {slots[idx]?.label ?? label}
-            </button>
-          ))}
-        </div>
+            {idx === combined.length - 1
+              ? renderDropZone({ index: combined.length }, "wide")
+              : renderDropZone({ index: idx + 1 }, "wide")}
+          </div>
+        ))}
       </div>
 
       {activeEvent ? (
         <div
-          draggable={!disableActions}
-          onDragStart={(e) => e.dataTransfer.setData("text/plain", activeEvent.id)}
-          style={{
-            border: "1px solid rgba(255,255,255,0.16)",
-            borderRadius: "12px",
-            padding: "12px",
-            background: "linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05))",
-            boxShadow: "0 8px 16px rgba(0,0,0,0.3)",
-            cursor: disableActions ? "not-allowed" : "grab",
-          }}
-        >
-            <div style={{ fontWeight: 800, marginBottom: "6px" }}>Place this event</div>
-            <div style={{ fontSize: "1.1rem" }}>{activeEvent.text || "(No description)"}</div>
-          </div>
-        ) : (
+      draggable={!disableActions}
+      onDragStart={(e) => e.dataTransfer.setData("text/plain", activeEvent.id)}
+      style={{
+        border: "1px solid rgba(255,255,255,0.16)",
+        borderRadius: "12px",
+        padding: "12px",
+        background: "linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05))",
+        boxShadow: "0 8px 16px rgba(0,0,0,0.3)",
+        cursor: disableActions ? "not-allowed" : "grab",
+      }}
+    >
+      <div style={{ fontWeight: 800, marginBottom: "6px" }}>Place this event</div>
+      <div style={{ fontSize: "1.1rem" }}>{activeEvent.text || "(No description)"}</div>
+    </div>
+  ) : (
         <div
           style={{
             padding: "12px",
@@ -200,7 +194,12 @@ export function TimelineModal({
           }}
         >
           {winnerName
-            ? `Congrats, ${winnerName} earned ${points ?? 0} points!`
+            ? (
+              <span>
+                Congrats, <strong style={{ color: "#f2c14f" }}>{winnerName}</strong> earned{" "}
+                <strong style={{ color: "#f2c14f" }}>{points ?? 0}</strong> points!
+              </span>
+            )
             : "No more events to place."}
         </div>
       )}

@@ -924,7 +924,13 @@ const TimelineFields = React.memo(function TimelineFields({
   const [centerYear, setCenterYear] = useState<number>(q?.timelineCenterYear ?? 2000);
   const [bulkEvents, setBulkEvents] = useState(
     (q?.timelineEvents ?? [])
-      .map((ev) => `${Math.abs(ev.year ?? 0)} ${ev.year && ev.year < 0 ? "BC" : "AC"}, ${ev.text}`)
+      .map((ev) => {
+        const baseYear = Math.abs(ev.year ?? 0);
+        const era = ev.year && ev.year < 0 ? "BC" : "AC";
+        const eventText = ev.text ?? "";
+        const timelineText = ev.timelineText ?? ev.text ?? "";
+        return `${baseYear} ${era}, ${eventText}, ${timelineText}`;
+      })
       .join("\n"),
   );
 
@@ -932,7 +938,13 @@ const TimelineFields = React.memo(function TimelineFields({
     setCenterYear(q?.timelineCenterYear ?? 2000);
     setBulkEvents(
       (q?.timelineEvents ?? [])
-        .map((ev) => `${Math.abs(ev.year ?? 0)}, ${ev.text}, ${ev.year && ev.year < 0 ? "BC" : "AC"}`)
+        .map((ev) => {
+          const baseYear = Math.abs(ev.year ?? 0);
+          const era = ev.year && ev.year < 0 ? "BC" : "AC";
+          const eventText = ev.text ?? "";
+          const timelineText = ev.timelineText ?? ev.text ?? "";
+          return `${baseYear} ${era}, ${eventText}, ${timelineText}`;
+        })
         .join("\n"),
     );
   }, [q?.timelineCenterYear, q?.timelineEvents]);
@@ -949,9 +961,10 @@ const TimelineFields = React.memo(function TimelineFields({
       .map((line) => line.trim())
       .filter(Boolean)
       .map((line) => {
-        // Expect "YEAR AC/BC, Event text"
+        // Expect "YEAR AC/BC, Event prompt, Timeline text"
         const [yearPart, ...rest] = line.split(",").map((p) => p.trim());
-        const text = rest.join(", ");
+        const promptText = rest[0] ?? "";
+        const timelineText = rest.slice(1).join(", ") || promptText;
         const yearTokens = (yearPart || "").split(/\s+/);
         const yearNum = Number(yearTokens[0]);
         const eraToken = (yearTokens[1] || "AC").toUpperCase();
@@ -962,9 +975,10 @@ const TimelineFields = React.memo(function TimelineFields({
           : null;
         return {
           id: makeId("timeline"),
-          text,
+          text: promptText,
           year: signedYear,
           isBC: eraToken === "BC",
+          timelineText,
         };
       });
   };
@@ -983,8 +997,8 @@ const TimelineFields = React.memo(function TimelineFields({
           lineHeight: 1.4,
         }}
       >
-        Enter timeline events as one per line: YEAR AC/BC, Event. BC years will be stored as
-        negative; AC/AD is implied if omitted. The center year anchors the starting point.
+        Enter timeline events as one per line: YEAR AC/BC, Event prompt, Timeline text. BC years
+        stored as negative; AC/AD is implied if omitted. The center year anchors the starting point.
       </div>
       <label className="label">Center year</label>
       <input
@@ -995,7 +1009,7 @@ const TimelineFields = React.memo(function TimelineFields({
         onBlur={persistCenterYear}
       />
       <label className="label" style={{ marginTop: "10px" }}>
-        Events (one per line: YEAR AC/BC, Event)
+        Events (one per line: YEAR AC/BC, Event prompt, Timeline text)
       </label>
       <textarea
         className="input"
@@ -1008,9 +1022,7 @@ const TimelineFields = React.memo(function TimelineFields({
           const parsed = parseBulkEvents(bulkEvents);
           upsertQuestion(category, points, { timelineEvents: parsed });
         }}
-        placeholder={`e.g.
-1998 AC, Google founded
-44 BC, Julius Caesar assassinated`}
+        placeholder={`e.g.\n1998 AC, Google founded, Google's rise\n44 BC, Julius Caesar assassinated, End of the Roman Republic`}
       />
     </>
   );

@@ -59,7 +59,8 @@ export type TurnState = {
 
 export type TimelineEvent = {
   id: string;
-  text: string;
+  text: string; // prompt text before placement
   year: number | null;
   isBC?: boolean | null;
+  timelineText?: string | null; // what shows on the timeline after placement
 };
