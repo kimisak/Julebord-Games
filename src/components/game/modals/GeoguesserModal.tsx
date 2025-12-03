@@ -131,7 +131,8 @@ export function GeoguesserModal({
                 <div style={{ color: "var(--muted)", fontSize: "0.9rem", textAlign: "right" }}>
                   Unlocking deducts{" "}
                   <strong style={{ color: "#f7c948" }}>{unlockCost} pts</strong> from this question
-                  and opens the map for {unlockDuration}s.
+                  and opens the map for{" "}
+                  <strong style={{ color: "#f7c948" }}>{unlockDuration}s</strong>.
                 </div>
               </div>
             )}
