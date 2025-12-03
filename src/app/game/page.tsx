@@ -67,7 +67,7 @@ export default function GameBoardPage() {
   const [finalLeaderboardShown, setFinalLeaderboardShown] = useState(false);
   const prevAnsweringTeamRef = useRef<string | null>(null);
 
-  const { turnState, setOrder, advanceBoard, advanceLyrics } = useTurnState();
+  const { turnState, setOrder, advanceBoard, advanceLyrics, setTurnState } = useTurnState();
   const turnOrder = turnState.order;
   const boardTurnIndex = turnState.boardIndex;
   const lyricsTurnIndex = turnState.lyricsIndex;
@@ -170,6 +170,7 @@ export default function GameBoardPage() {
       const pattern = generateRedPattern(question.lyricsSegments?.length ?? 0);
       normalized = { ...question, lyricsRedPattern: pattern };
       setLyricsPattern(pattern);
+      setTurnState((prev) => ({ ...prev, lyricsIndex: prev.boardIndex }));
     }
     if (question.type === "geoguesser") {
       const duration = question.geoTimerSeconds ?? 10;
@@ -250,11 +251,11 @@ export default function GameBoardPage() {
     if (normalized.type === "lyrics") {
       const len = normalized.lyricsSegments?.length ?? 0;
       setLyricsRevealed(new Array(len).fill(false));
-      const lyricId =
+      const boardId =
         activeTurnOrder.length > 0
-          ? activeTurnOrder[lyricsTurnIndex % activeTurnOrder.length]
+          ? activeTurnOrder[boardTurnIndex % activeTurnOrder.length]
           : "";
-      setSelectedTeamId(lyricId);
+      setSelectedTeamId(boardId);
     } else {
       setLyricsRevealed([]);
       const boardId =
