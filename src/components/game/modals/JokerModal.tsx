@@ -34,6 +34,7 @@ type Props = {
   disableActions?: boolean;
   maxScore: number;
   rotateInfo?: boolean;
+  incrementInfo?: number;
 };
 
 const statusColors: Record<JokerResult, string> = {
@@ -61,6 +62,7 @@ export function JokerModal({
   disableActions,
   maxScore,
   rotateInfo,
+  incrementInfo,
 }: Props) {
   const total = round.numbers.length;
   const activeIndex = total - 1 - progress.currentIndex; // start from rightmost
@@ -198,6 +200,11 @@ export function JokerModal({
             <div style={{ color: "var(--muted)", fontSize: "0.9rem" }}>
               Guesses left: {guessesLeft}
             </div>
+            {incrementInfo !== undefined && (
+              <div style={{ color: "var(--muted)", fontSize: "0.9rem" }}>
+                +/- {incrementInfo} per guess
+              </div>
+            )}
             <div style={{ color: "var(--muted)", fontSize: "0.85rem" }}>
               {rotateInfo ? "Wrong guesses: next team" : "Wrong guesses: same team"}
             </div>

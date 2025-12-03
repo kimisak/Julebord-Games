@@ -661,6 +661,7 @@ export default function GameBoardPage() {
           disableActions={!answeringTeam}
           maxScore={getMaxJokerScore()}
           rotateInfo={activeQuestion.jokerRotateOnMiss ?? true}
+          incrementInfo={jokerRound.increment}
         />
       );
     }
