@@ -94,7 +94,7 @@ export function AudioModal({
     () => Math.max(0, question.audioStartSeconds ?? parseStartSeconds(question.audioUrl)),
     [question.audioStartSeconds, question.audioUrl],
   );
-  const embedUrl = useMemo(() => buildEmbedUrl(question.audioUrl, startAt), [question.audioUrl, startAt]);
+  const embedUrl = useMemo(() => normalizeUrl(question.audioUrl || ""), [question.audioUrl]);
 
   const buildPlaySrc = () => {
     const raw = question.audioUrl ? normalizeUrl(question.audioUrl) : "";
@@ -155,6 +155,8 @@ export function AudioModal({
   useEffect(() => {
     if (showAnswer) {
       stopPlayback();
+      setHiddenSrc("");
+      setPlayKey((k) => k + 1);
     }
   }, [showAnswer]);
 
@@ -320,16 +322,16 @@ export function AudioModal({
                       );
                     })}
                   </div>
-                  <div style={{ display: "flex", gap: "10px", alignItems: "center", flexWrap: "wrap", justifyContent: "center" }}>
+                  <div style={{ display: "flex", gap: "10px", alignItems: "center", flexWrap: "wrap", justifyContent: "center", marginTop: "18px" }}>
                     <button
                       className="button secondary"
                       onClick={startPlayback}
-                      disabled={!embedUrl}
+                      disabled={!embedUrl || isPlaying}
                       style={{
                         position: "relative",
                         overflow: "hidden",
                         minWidth: "180px",
-                        opacity: !embedUrl ? 0.65 : 1,
+                        opacity: !embedUrl || isPlaying ? 0.65 : 1,
                         boxShadow: isPlaying
                           ? "0 0 0 0 rgba(129, 230, 217, 0.55)"
                           : "0 10px 26px rgba(0,0,0,0.35)",
@@ -338,18 +340,29 @@ export function AudioModal({
                     >
                       {isPlaying ? "Playing..." : "Play clip"}
                     </button>
-                    <div style={{ color: "var(--muted)", fontSize: "0.95rem", display: "grid", gap: "4px", textAlign: "center" }}>
-                      <span>
-                        {startAt > 0
-                          ? `Starts at ${startAt}s, plays for ${stopAfter} second(s).`
-                          : `Plays for ${stopAfter} second(s).`}
-                      </span>
-                      {isPlaying && (
+                    <button
+                      className="button ghost"
+                      onClick={() => stopPlayback()}
+                      disabled={!isPlaying}
+                      style={{ minWidth: "140px", opacity: !isPlaying ? 0.6 : 1 }}
+                    >
+                      Stop
+                    </button>
+                    <div style={{ color: "var(--muted)", fontSize: "0.95rem", display: "grid", gap: "4px", textAlign: "center", minWidth: "160px" }}>
+                      {isPlaying ? (
                         <span style={{ color: "#81e6d9", fontWeight: 700 }}>
                           {remaining?.toFixed(1)}s left
                         </span>
+                      ) : (
+                        <>
+                          <span>
+                            {startAt > 0
+                              ? `Starts at ${startAt}s, plays for ${stopAfter} second(s).`
+                              : `Plays for ${stopAfter} second(s).`}
+                          </span>
+                          {!embedUrl && <span style={{ color: "#f87171" }}>Missing YouTube URL</span>}
+                        </>
                       )}
-                      {!embedUrl && <span style={{ color: "#f87171" }}>Missing YouTube URL</span>}
                     </div>
                   </div>
                 </div>
@@ -402,6 +415,7 @@ export function AudioModal({
             inset: 0,
             backfaceVisibility: "hidden",
             transform: "rotateY(180deg)",
+            overflow: "hidden",
           }}
         >
           <div
@@ -409,10 +423,10 @@ export function AudioModal({
               padding: "18px",
               background: "rgba(10, 12, 18, 0.96)",
               minHeight: "100%",
-              display: "flex",
-              flexDirection: "column",
+              display: "grid",
+              gridTemplateRows: "auto auto 1fr auto auto",
               gap: "14px",
-              overflowY: "auto",
+              overflow: "hidden",
             }}
           >
             <div>
@@ -442,32 +456,27 @@ export function AudioModal({
                 overflow: "hidden",
                 background: "rgba(255,255,255,0.03)",
                 border: "1px solid rgba(255,255,255,0.12)",
-                flex: 1,
-                minHeight: "360px",
+                minHeight: "300px",
+                maxHeight: "360px",
+                position: "relative",
+                isolation: "isolate",
               }}
             >
               {embedUrl ? (
-                <div
+                <iframe
+                  title="Answer video"
+                  src={embedUrl}
+                  allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
                   style={{
+                    width: "100%",
+                    height: "100%",
+                    border: 0,
+                    display: "block",
                     position: "relative",
-                    paddingTop: "56.25%",
-                    minHeight: "360px",
+                    zIndex: 2,
                   }}
-                >
-                  <iframe
-                    title="Answer video"
-                    src={embedUrl}
-                    allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowFullScreen
-                    style={{
-                      position: "absolute",
-                      inset: 0,
-                      width: "100%",
-                      height: "100%",
-                      border: 0,
-                    }}
-                  />
-                </div>
+                />
               ) : (
                 <div style={{ padding: "14px", color: "var(--muted)" }}>No video provided.</div>
               )}
