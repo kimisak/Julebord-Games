@@ -97,30 +97,24 @@ export function Leaderboard({ teams, onAdjust, onSet }: Props) {
                       flexWrap: "wrap",
                     }}
                   >
-                    <div
+                    <span
                       style={{
-                        fontWeight: 900,
-                        letterSpacing: "0.01em",
-                        color: "#f8fafc",
-                        textShadow: "0 1px 4px rgba(0,0,0,0.4)",
-                      }}
-                    >
-                      {team.name}
-                    </div>
-                    <div
-                      style={{
-                        fontSize: "0.8rem",
-                        padding: "4px 10px",
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: "8px",
+                        padding: "6px 10px",
                         borderRadius: "999px",
                         background: `${accent.base}22`,
-                        border: `1px solid ${accent.base}55`,
-                        color: accent.glow,
-                        fontWeight: 800,
-                        letterSpacing: "0.05em",
+                        border: `2px solid ${accent.base}55`,
+                        color: "#f8fafc",
+                        fontWeight: 900,
+                        letterSpacing: "0.01em",
+                        boxShadow: `0 1px 6px ${accent.base}44`,
                       }}
                     >
-                      {marker}
-                    </div>
+                      <span>{marker}</span>
+                      <span style={{ textShadow: "0 1px 4px rgba(0,0,0,0.4)" }}>{team.name}</span>
+                    </span>
                   </div>
                   <div
                     style={{
