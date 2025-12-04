@@ -86,7 +86,7 @@ export function LyricsModal({
                   color: "var(--muted)",
                 }}
               >
-                TEXT GRID · {question.category}
+                {question.category} · Text Grid
               </div>
               <div style={{ fontSize: "2rem", fontWeight: 800 }}>
                 {question.points} pts
@@ -98,6 +98,11 @@ export function LyricsModal({
               )}
             </div>
           </div>
+          {question.prompt && (
+            <div style={{ marginBottom: "10px", fontWeight: 700, fontSize: "1.15rem", lineHeight: 1.35 }}>
+              {question.prompt}
+            </div>
+          )}
           <div
             style={{
               display: "grid",
@@ -198,7 +203,7 @@ export function LyricsModal({
                 fontWeight: 800,
               }}
             >
-              TEXT GRID · {question.category}
+              {question.category} · Text Grid
             </div>
             <div style={{ fontWeight: 800, fontSize: "2rem", marginTop: "6px" }}>
               {question.points} pts
