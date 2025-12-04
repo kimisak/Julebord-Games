@@ -6,6 +6,7 @@ type Props = {
   category?: string;
   centerYear: number;
   currentTeamName?: string;
+  currentTeamColor?: string;
   queue: TimelineEvent[];
   placedLeft: TimelineEvent[];
   placedRight: TimelineEvent[];
@@ -26,6 +27,7 @@ export function TimelineModal({
   category,
   centerYear,
   currentTeamName,
+  currentTeamColor,
   queue,
   placedLeft,
   placedRight,
@@ -136,7 +138,7 @@ export function TimelineModal({
             </div>
           ) : currentTeamName ? (
             <div style={{ color: "var(--muted)", fontSize: "0.95rem" }}>
-              Guessing: <strong style={{ color: "#f2c14f" }}>{currentTeamName}</strong>
+              Guessing: <strong style={{ color: currentTeamColor || "#f2c14f" }}>{currentTeamName}</strong>
             </div>
           ) : null}
         </div>

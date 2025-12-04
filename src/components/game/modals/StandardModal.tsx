@@ -7,6 +7,8 @@ type Props = {
   teams: Team[];
   currentTeamName?: string;
   answeringTeamName?: string;
+  currentTeamColor?: string;
+  answeringTeamColor?: string;
   onClose: () => void;
   onRevealAnswer: () => void;
   showAnswer: boolean;
@@ -21,6 +23,8 @@ export function StandardModal({
   teams,
   currentTeamName,
   answeringTeamName,
+  currentTeamColor,
+  answeringTeamColor,
   onClose,
   onRevealAnswer,
   showAnswer,
@@ -82,7 +86,7 @@ export function StandardModal({
               </div>
               {answeringTeamName && (
                 <div style={{ color: "var(--muted)", marginTop: "2px", fontSize: "0.95rem" }}>
-                  Answering: <strong style={{ color: "#81e6d9" }}>{answeringTeamName}</strong>
+                  Answering: <strong style={{ color: answeringTeamColor || "#81e6d9" }}>{answeringTeamName}</strong>
                 </div>
               )}
             </div>
@@ -208,7 +212,7 @@ export function StandardModal({
           >
             {answeringTeamName && (
               <div style={{ color: "var(--muted)", fontSize: "0.95rem" }}>
-                Answered by: <strong style={{ color: "#81e6d9" }}>{answeringTeamName}</strong>
+                Answered by: <strong style={{ color: answeringTeamColor || "#81e6d9" }}>{answeringTeamName}</strong>
               </div>
             )}
             <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>

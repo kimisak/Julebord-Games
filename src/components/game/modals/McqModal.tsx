@@ -8,6 +8,8 @@ type Props = {
   teams: Team[];
   currentTeamName?: string;
   answeringTeamName?: string;
+  currentTeamColor?: string;
+  answeringTeamColor?: string;
   eliminated: number[];
   resolved?: boolean;
   correctIndex?: number;
@@ -20,6 +22,8 @@ export function McqModal({
   question,
   currentTeamName,
   answeringTeamName,
+  currentTeamColor,
+  answeringTeamColor,
   eliminated,
   resolved = false,
   correctIndex = 0,
@@ -81,12 +85,12 @@ export function McqModal({
                 fontSize: "0.95rem",
               }}
             >
-              Answering: <strong style={{ color: "#81e6d9" }}>{answeringTeamName}</strong>
+              Answering: <strong style={{ color: answeringTeamColor || "#81e6d9" }}>{answeringTeamName}</strong>
             </div>
           )}
           {currentTeamName && !answeringTeamName && (
             <div style={{ color: "var(--muted)", marginTop: "2px" }}>
-              Current: <strong style={{ color: "#f2c14f" }}>{currentTeamName}</strong>
+              Current: <strong style={{ color: currentTeamColor || "#f2c14f" }}>{currentTeamName}</strong>
             </div>
           )}
         </div>

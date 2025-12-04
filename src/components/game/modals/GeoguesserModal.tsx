@@ -7,6 +7,7 @@ type Props = {
   teams: Team[];
   currentTeamName?: string;
   answeringTeamName?: string;
+  answeringTeamColor?: string;
   mapLocked: boolean;
   onToggleLock: () => void;
   onClose: () => void;
@@ -24,6 +25,7 @@ export function GeoguesserModal({
   question,
   currentTeamName,
   answeringTeamName,
+  answeringTeamColor,
   mapLocked,
   onToggleLock,
   onClose,
@@ -101,7 +103,7 @@ export function GeoguesserModal({
                     fontSize: "0.95rem",
                   }}
                 >
-                  Answering: <strong style={{ color: "#81e6d9" }}>{answeringTeamName}</strong>
+                  Answering: <strong style={{ color: answeringTeamColor || "#81e6d9" }}>{answeringTeamName}</strong>
                 </div>
               )}
             </div>

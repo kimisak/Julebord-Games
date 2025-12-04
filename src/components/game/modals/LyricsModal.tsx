@@ -13,7 +13,9 @@ type Props = {
   onRevealAnswer: () => void;
   showAnswer: boolean;
   currentTeamName?: string;
+  currentTeamColor?: string;
   answeringTeamName?: string;
+  answeringTeamColor?: string;
   answerVideoUrl?: string | null;
   onCorrect: () => void;
   onWrong: () => void;
@@ -32,7 +34,9 @@ export function LyricsModal({
   onRevealAnswer,
   showAnswer,
   currentTeamName,
+  currentTeamColor,
   answeringTeamName,
+  answeringTeamColor,
   answerVideoUrl,
   onCorrect,
   onWrong,
@@ -93,7 +97,7 @@ export function LyricsModal({
               </div>
               {answeringTeamName && (
                 <div style={{ color: "var(--muted)", marginTop: "2px", fontSize: "0.95rem" }}>
-                  Answering: <strong style={{ color: "#81e6d9" }}>{answeringTeamName}</strong>
+                  Answering: <strong style={{ color: answeringTeamColor || "#81e6d9" }}>{answeringTeamName}</strong>
                 </div>
               )}
             </div>
@@ -208,6 +212,11 @@ export function LyricsModal({
             <div style={{ fontWeight: 800, fontSize: "2rem", marginTop: "6px" }}>
               {question.points} pts
             </div>
+            {answeringTeamName && (
+              <div style={{ color: "var(--muted)", fontSize: "0.95rem" }}>
+                Answered by: <strong style={{ color: answeringTeamColor || "#81e6d9" }}>{answeringTeamName}</strong>
+              </div>
+            )}
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
             <div style={{ color: "var(--muted)", fontSize: "1rem" }}>

@@ -122,6 +122,8 @@ export default function GameBoardPage() {
       ? getLyricsTeamId()
       : lastGuessTeamId || selectedTeamId || getBoardTeamId();
   const answeringTeam = teams.find((t) => t.id === answeringTeamId);
+  const currentTeamColor = currentTeam?.accentBase || "#f2c14f";
+  const answeringTeamColor = answeringTeam?.accentBase || "#81e6d9";
 
   const allLyricsRevealed =
     (activeQuestion?.lyricsSegments?.length ?? 0) > 0 &&
@@ -769,7 +771,9 @@ export default function GameBoardPage() {
           onRevealAnswer={() => setShowAnswer(true)}
           showAnswer={showAnswer}
           currentTeamName={currentTeam?.name}
+          currentTeamColor={currentTeamColor}
           answeringTeamName={answeringTeam?.name}
+          answeringTeamColor={answeringTeamColor}
           answerVideoUrl={answerVideoUrl}
           onCorrect={() => markAnswered(true)}
           onWrong={() => markAnswered(false)}
@@ -784,6 +788,7 @@ export default function GameBoardPage() {
           question={activeQuestion}
           teams={teams}
           currentTeamName={currentTeam?.name}
+          answeringTeamColor={answeringTeamColor}
           answeringTeamName={answeringTeam?.name}
           mapLocked={mapLocked}
           onToggleLock={toggleGeoLock}
@@ -805,6 +810,8 @@ export default function GameBoardPage() {
           teams={teams}
           currentTeamName={currentTeam?.name}
           answeringTeamName={answeringTeam?.name}
+          currentTeamColor={currentTeamColor}
+          answeringTeamColor={answeringTeamColor}
           eliminated={mcqEliminated}
           onSelect={handleMcqSelect}
           onClose={closeModal}
@@ -820,6 +827,7 @@ export default function GameBoardPage() {
           question={activeQuestion}
           teams={teams}
           currentTeamName={currentTeam?.name}
+          currentTeamColor={currentTeamColor}
           answeringTeamName={answeringTeam?.name}
           round={jokerRound}
           progress={jokerProgress}
@@ -841,6 +849,7 @@ export default function GameBoardPage() {
           category={activeQuestion.category}
           centerYear={timelineCenterYear}
           currentTeamName={timelineTeam?.name}
+          currentTeamColor={timelineTeam?.accentBase || "#f2c14f"}
           queue={timelineQueue ?? []}
           placedLeft={timelinePlacedLeft ?? []}
           placedRight={timelinePlacedRight ?? []}
@@ -863,7 +872,9 @@ export default function GameBoardPage() {
         <AudioModal
           question={activeQuestion}
           currentTeamName={currentTeam?.name}
+          currentTeamColor={currentTeamColor}
           answeringTeamName={answeringTeam?.name}
+          answeringTeamColor={answeringTeamColor}
           onRevealAnswer={() => setShowAnswer(true)}
           showAnswer={showAnswer}
           onCorrect={() => markAnswered(true)}
@@ -878,7 +889,9 @@ export default function GameBoardPage() {
         question={activeQuestion}
         teams={teams}
         currentTeamName={currentTeam?.name}
+        currentTeamColor={currentTeamColor}
         answeringTeamName={answeringTeam?.name}
+        answeringTeamColor={answeringTeamColor}
         onClose={closeModal}
         onRevealAnswer={() => setShowAnswer(true)}
         showAnswer={showAnswer}

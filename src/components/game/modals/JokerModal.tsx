@@ -25,6 +25,7 @@ type Props = {
   question: Question;
   teams: Team[];
   currentTeamName?: string;
+  currentTeamColor?: string;
   answeringTeamName?: string;
   round: JokerRound;
   progress: JokerProgress;
@@ -53,6 +54,7 @@ const statusBorder: Record<JokerResult, string> = {
 
 export function JokerModal({
   question,
+  currentTeamColor,
   answeringTeamName,
   round,
   progress,
@@ -147,7 +149,7 @@ export function JokerModal({
           </div>
           {answeringTeamName && (
             <div style={{ color: "var(--muted)", fontSize: "0.95rem" }}>
-              Guessing: <strong style={{ color: "#f2c14f" }}>{answeringTeamName}</strong>
+              Guessing: <strong style={{ color: currentTeamColor || "#f2c14f" }}>{answeringTeamName}</strong>
             </div>
           )}
         </div>
