@@ -126,8 +126,6 @@ export default function GameBoardPage() {
   const currentTeamEmoji = currentTeam?.badgeEmoji || "⭐️";
   const answeringTeamColor = answeringTeam?.accentBase || "#81e6d9";
   const answeringTeamEmoji = answeringTeam?.badgeEmoji || "⭐️";
-  const currentTeamColor = currentTeam?.accentBase || "#f2c14f";
-  const answeringTeamColor = answeringTeam?.accentBase || "#81e6d9";
 
   const allLyricsRevealed =
     (activeQuestion?.lyricsSegments?.length ?? 0) > 0 &&
