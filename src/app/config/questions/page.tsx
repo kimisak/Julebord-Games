@@ -46,6 +46,9 @@ function buildDefaultQuestions(): Question[] {
         timelineRotateOnMiss: true,
         mcqOptions: [],
         mcqCorrectIndex: 0,
+        audioUrl: null,
+        audioStopSeconds: null,
+        audioStartSeconds: null,
       });
     });
   });
@@ -274,6 +277,9 @@ export default function QuestionConfigPage() {
           timelineRotateOnMiss: true,
           mcqOptions: [],
           mcqCorrectIndex: 0,
+          audioUrl: null,
+          audioStopSeconds: null,
+          audioStartSeconds: null,
           ...updates,
         },
       ];
@@ -317,6 +323,9 @@ export default function QuestionConfigPage() {
           timelineRotateOnMiss: true,
           mcqOptions: [],
           mcqCorrectIndex: 0,
+          audioUrl: null,
+          audioStopSeconds: null,
+          audioStartSeconds: null,
       }));
       return [...prev, ...additions];
     });
@@ -628,6 +637,107 @@ const StandardFields = React.memo(function StandardFields({
           )}
         </div>
       )}
+    </>
+  );
+});
+
+const AudioFields = React.memo(function AudioFields({
+  category,
+  points,
+  q,
+  upsertQuestion,
+}: FieldProps) {
+  const [prompt, setPrompt] = useState(q?.prompt ?? "");
+  const [answer, setAnswer] = useState(q?.answer ?? "");
+  const [audioUrl, setAudioUrl] = useState(q?.audioUrl ?? "");
+  const [stopSeconds, setStopSeconds] = useState<number>(q?.audioStopSeconds ?? 10);
+
+  React.useEffect(() => {
+    setPrompt(q?.prompt ?? "");
+    setAnswer(q?.answer ?? "");
+    setAudioUrl(q?.audioUrl ?? "");
+    setStopSeconds(q?.audioStopSeconds ?? 10);
+  }, [q?.prompt, q?.answer, q?.audioUrl, q?.audioStopSeconds]);
+
+  const persistSeconds = () => {
+    const safe = Number.isFinite(stopSeconds) ? Math.max(1, Math.round(stopSeconds)) : 10;
+    setStopSeconds(safe);
+    upsertQuestion(category, points, { audioStopSeconds: safe });
+  };
+
+  return (
+    <>
+      <label className="label">Question title or clue</label>
+      <textarea
+        value={prompt}
+        onChange={(e) => setPrompt(e.target.value)}
+        onBlur={() =>
+          upsertQuestion(category, points, {
+            prompt,
+          })
+        }
+        style={{
+          width: "100%",
+        minHeight: "70px",
+        borderRadius: "10px",
+        border: "1px solid rgba(255,255,255,0.12)",
+        background: "rgba(255,255,255,0.04)",
+        color: "var(--foreground)",
+        padding: "10px",
+      }}
+      placeholder="Describe what they need to identify from the audio"
+    />
+      <label className="label" style={{ marginTop: "8px" }}>
+        YouTube URL (audio source)
+      </label>
+      <input
+        className="input"
+        value={audioUrl}
+        onChange={(e) => setAudioUrl(e.target.value)}
+        onBlur={() =>
+          upsertQuestion(category, points, {
+            audioUrl: audioUrl.trim() || null,
+          })
+        }
+        placeholder="https://youtube.com/watch?v=..."
+      />
+      <label className="label" style={{ marginTop: "8px" }}>
+        Auto-stop after (seconds)
+      </label>
+      <input
+        className="input"
+        type="number"
+        min={1}
+        value={stopSeconds}
+        onChange={(e) => setStopSeconds(Number(e.target.value))}
+        onBlur={persistSeconds}
+        style={{ maxWidth: "160px" }}
+      />
+      <label className="label" style={{ marginTop: "8px" }}>
+        Expected answer
+      </label>
+      <textarea
+        value={answer}
+        onChange={(e) => setAnswer(e.target.value)}
+        onBlur={() =>
+          upsertQuestion(category, points, {
+            answer,
+          })
+        }
+        style={{
+          width: "100%",
+          minHeight: "60px",
+          borderRadius: "10px",
+          border: "1px solid rgba(255,255,255,0.12)",
+          background: "rgba(255,255,255,0.04)",
+          color: "var(--foreground)",
+          padding: "10px",
+        }}
+        placeholder="What answer should score as correct?"
+      />
+      <div style={{ color: "var(--muted)", marginTop: "6px", fontSize: "0.9rem" }}>
+        The audio clip plays once, then locks. The hidden iframe uses the YouTube link above.
+      </div>
     </>
   );
 });
@@ -1396,6 +1506,7 @@ const TimelineFields = React.memo(function TimelineFields({
                           <option value="joker">Joker high/low</option>
                           <option value="timeline">Timeline</option>
                           <option value="mcq">Multiple choice</option>
+                          <option value="audio">Audio</option>
                         </select>
                       </div>
                       {q?.answered && (
@@ -1450,6 +1561,14 @@ const TimelineFields = React.memo(function TimelineFields({
                     )}
                     {(q?.type ?? "standard") === "mcq" && (
                       <McqFields
+                        category={category}
+                        points={points}
+                        q={q}
+                        upsertQuestion={upsertQuestion}
+                      />
+                    )}
+                    {(q?.type ?? "standard") === "audio" && (
+                      <AudioFields
                         category={category}
                         points={points}
                         q={q}

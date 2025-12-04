@@ -27,7 +27,7 @@ export type Question = {
   imageName?: string | null;
   answerImageData?: string | null;
   answerImageName?: string | null;
-  type?: "standard" | "lyrics" | "geoguesser" | "joker" | "timeline" | "mcq";
+  type?: "standard" | "lyrics" | "geoguesser" | "joker" | "timeline" | "mcq" | "audio";
   lyricsSegments?: string[];
   mapEmbedUrl?: string | null;
   answerLocationLabel?: string | null;
@@ -54,6 +54,9 @@ export type Question = {
   mcqRotateOnMiss?: boolean | null;
   mcqOptions?: string[];
   mcqCorrectIndex?: number | null;
+  audioUrl?: string | null;
+  audioStopSeconds?: number | null;
+  audioStartSeconds?: number | null;
 };
 
 export type TeamMap = Record<string, Team>;

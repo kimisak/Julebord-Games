@@ -13,6 +13,7 @@ import { McqModal } from "@/components/game/modals/McqModal";
 import { TimelineModal } from "@/components/game/modals/TimelineModal";
 import { LyricsModal } from "@/components/game/modals/LyricsModal";
 import { StandardModal } from "@/components/game/modals/StandardModal";
+import { AudioModal } from "@/components/game/modals/AudioModal";
 import { useAudioCue } from "@/hooks/useAudioCue";
 import { usePersistentState } from "@/hooks/usePersistentState";
 import { useTurnState } from "@/hooks/useTurnState";
@@ -257,6 +258,10 @@ export default function GameBoardPage() {
           : teams[0]?.id ?? "";
       setSelectedTeamId(boardId);
     }
+    if (question.type === "audio") {
+      const duration = Math.max(1, question.audioStopSeconds ?? 10);
+      normalized = { ...question, audioStopSeconds: duration };
+    }
     setActiveQuestion(normalized);
     setShowAnswer(false);
     setGeoTimerUsed(false);
@@ -428,7 +433,7 @@ export default function GameBoardPage() {
         q.id === activeQuestion.id ? { ...q, answered: true } : q,
       ),
     );
-    if (activeTurnOrder.length > 0) {
+    if (activeTurnOrder.length > 0 && activeQuestion.type !== "audio") {
       advanceBoard();
       if (activeQuestion.type !== "lyrics") {
         // keep lyrics order as-is for non-lyrics
@@ -852,6 +857,21 @@ export default function GameBoardPage() {
         />
       );
     }
+    if (activeQuestion.type === "audio") {
+      return (
+        <AudioModal
+          question={activeQuestion}
+          currentTeamName={currentTeam?.name}
+          answeringTeamName={answeringTeam?.name}
+          onRevealAnswer={() => setShowAnswer(true)}
+          showAnswer={showAnswer}
+          onCorrect={() => markAnswered(true)}
+          onWrong={() => markAnswered(false)}
+          onClose={closeModal}
+          disableActions={!answeringTeam}
+        />
+      );
+    }
     return (
       <StandardModal
         question={activeQuestion}
@@ -1189,6 +1209,23 @@ export default function GameBoardPage() {
           100% {
             transform: scale(1);
             box-shadow: 0 0 0 rgba(255, 255, 255, 0);
+          }
+        }
+        @keyframes vizPulse {
+          0% { transform: scaleY(1); }
+          40% { transform: scaleY(1.6); }
+          70% { transform: scaleY(0.7); }
+          100% { transform: scaleY(1); }
+        }
+        @keyframes pulse-ring {
+          0% {
+            box-shadow: 0 0 0 0 rgba(129, 230, 217, 0.4);
+          }
+          70% {
+            box-shadow: 0 0 0 12px rgba(129, 230, 217, 0);
+          }
+          100% {
+            box-shadow: 0 0 0 0 rgba(129, 230, 217, 0);
           }
         }
         @keyframes joker-confetti {
