@@ -89,14 +89,14 @@ export function StandardModal({
               <div style={{ fontSize: "2rem", fontWeight: 800 }}>
                 {question.points} pts
               </div>
-              {answeringTeamName && (
-                <TeamPill
-                  label="Answering"
-                  name={answeringTeamName}
-                  color={answeringTeamColor}
-                  emoji={answeringTeamEmoji}
-                />
-              )}
+            {answeringTeamName && !showAnswer && (
+              <TeamPill
+                label="Answering"
+                name={answeringTeamName}
+                color={answeringTeamColor}
+                emoji={answeringTeamEmoji}
+              />
+            )}
             </div>
           </div>
           <div style={{ fontSize: "2.2rem", lineHeight: 1.35 }}>

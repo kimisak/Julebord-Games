@@ -220,14 +220,6 @@ export function LyricsModal({
             <div style={{ fontWeight: 800, fontSize: "2rem", marginTop: "6px" }}>
               {question.points} pts
             </div>
-            {answeringTeamName && (
-              <TeamPill
-                label="Answered by"
-                name={answeringTeamName}
-                color={answeringTeamColor}
-                emoji={answeringTeamEmoji}
-              />
-            )}
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
             <div style={{ color: "var(--muted)", fontSize: "1rem" }}>

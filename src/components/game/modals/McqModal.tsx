@@ -82,7 +82,7 @@ export function McqModal({
           <div style={{ fontSize: "2rem", fontWeight: 800 }}>
             {question.points} pts
           </div>
-          {answeringTeamName && (
+          {answeringTeamName && !resolved && (
             <TeamPill label="Answering" name={answeringTeamName} color={answeringTeamColor} emoji={answeringTeamEmoji} />
           )}
           {currentTeamName && !answeringTeamName && (

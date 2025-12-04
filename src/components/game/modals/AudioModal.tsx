@@ -233,7 +233,7 @@ export function AudioModal({
               <div style={{ fontSize: "2rem", fontWeight: 800 }}>
                 {question.points} pts
               </div>
-              {answeringTeamName && (
+              {answeringTeamName && !showAnswer && (
                 <TeamPill
                   label="Answering"
                   name={answeringTeamName}
