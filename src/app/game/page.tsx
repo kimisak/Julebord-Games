@@ -955,12 +955,16 @@ export default function GameBoardPage() {
                 whiteSpace: "nowrap",
                 overflow: "hidden",
                 textOverflow: "ellipsis",
+                maxWidth: "360px",
               }}
             >
               {turnOrder.length > 0 && currentTeam ? (
-                <div style={{ display: "grid", gap: "2px" }}>
+                <div style={{ display: "grid", gap: "4px" }}>
                   <div>{activeQuestion?.type === "lyrics" ? "Lyrics turn" : "Board turn"}</div>
-                  <TeamPill label="Current" name={currentTeam.name} color={currentTeamColor} emoji={currentTeamEmoji} />
+                  <div style={{ display: "flex", alignItems: "center", gap: "6px", flexWrap: "nowrap" }}>
+                    <span>Current:</span>
+                    <TeamPill label={undefined} name={currentTeam.name} color={currentTeamColor} emoji={currentTeamEmoji} />
+                  </div>
                 </div>
               ) : (
                 "Set random answer order"
