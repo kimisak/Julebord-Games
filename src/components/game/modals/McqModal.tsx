@@ -1,6 +1,5 @@
 'use client';
 
-import { useMemo } from "react";
 import type { Question, Team } from "@/lib/types";
 import { TeamPill } from "@/components/game/TeamPill";
 import { useMemo } from "react";
@@ -43,14 +42,14 @@ export function McqModal({
   const optionCount = hasFour ? 4 : Math.min(2, Math.max(2, rawOptions.length || 2));
   const options = rawOptions.slice(0, optionCount);
   const palette = ["#d94444", "#2c9b61", "#8a5adf", "#f2c14f"];
-  const optionColors = useMemo(() => {
-    const arr = [...palette];
-    for (let i = arr.length - 1; i > 0; i -= 1) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [arr[i], arr[j]] = [arr[j], arr[i]];
-    }
-    return arr.slice(0, options.length);
-  }, [question.id, options.length]);
+const optionColors = useMemo(() => {
+  const arr = [...palette];
+  for (let i = arr.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr.slice(0, options.length);
+}, [question.id, options.length]);
 
   const hasAnswerImage = Boolean(question.answerImageData);
   const hasQuestionImage = Boolean(question.imageData);
