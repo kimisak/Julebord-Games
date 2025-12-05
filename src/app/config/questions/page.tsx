@@ -117,7 +117,7 @@ const McqFields = React.memo(function McqFields({
           setCorrectIndex(boundedCorrect);
           persist(padded, boundedCorrect, next, rotateOnMiss);
         }}
-        style={{ maxWidth: "140px" }}
+        style={{ maxWidth: "140px", cursor: "pointer" }}
       >
         <option value={2}>2 options</option>
         <option value={4}>4 options</option>
@@ -1609,6 +1609,7 @@ const TimelineFields = React.memo(function TimelineFields({
                             padding: "0.45rem 0.6rem",
                             appearance: "auto",
                             WebkitAppearance: "auto",
+                            cursor: "pointer",
                           }}
                         >
                           <option value="standard">Standard</option>
