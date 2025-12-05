@@ -577,14 +577,7 @@ const StandardFields = React.memo(function StandardFields({
       <label className="label" style={{ marginTop: "8px" }}>
         Answer image (optional)
       </label>
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: "8px",
-          flexWrap: "wrap",
-        }}
-      >
+      <label className="input" style={{ display: "inline-flex", alignItems: "center", gap: "8px", width: "fit-content", cursor: "pointer", padding: "0.6rem 0.8rem" }}>
         <input
           type="file"
           accept="image/*"
@@ -595,22 +588,10 @@ const StandardFields = React.memo(function StandardFields({
               e.target.files?.[0] ?? null,
             )
           }
-          style={{ color: "var(--muted)", maxWidth: "100%" }}
+          style={{ display: "none" }}
         />
-        {q?.answerImageData && (
-          <button
-            className="button ghost"
-            onClick={() =>
-              upsertQuestion(category, points, {
-                answerImageData: null,
-                answerImageName: null,
-              })
-            }
-        >
-          Remove answer image
-        </button>
-      )}
-    </div>
+        <span style={{ fontWeight: 600 }}>⬆️ Upload</span>
+      </label>
       {q?.answerImageData && (
         <div
           style={{
@@ -618,8 +599,35 @@ const StandardFields = React.memo(function StandardFields({
             borderRadius: "10px",
             overflow: "hidden",
             border: "1px solid rgba(255,255,255,0.1)",
+            position: "relative",
           }}
         >
+          <button
+            onClick={() =>
+              upsertQuestion(category, points, {
+                answerImageData: null,
+                answerImageName: null,
+              })
+            }
+            aria-label="Remove answer image"
+            style={{
+              position: "absolute",
+              top: "8px",
+              right: "8px",
+              width: "28px",
+              height: "28px",
+              borderRadius: "50%",
+              border: "1px solid rgba(255,255,255,0.2)",
+              background: "rgba(0,0,0,0.35)",
+              color: "#fff",
+              display: "grid",
+              placeItems: "center",
+              cursor: "pointer",
+              zIndex: 2,
+            }}
+          >
+            ×
+          </button>
           <img
             src={q.answerImageData}
             alt={q.answerImageName || "Answer image"}
