@@ -1446,14 +1446,6 @@ const TimelineFields = React.memo(function TimelineFields({
                     renameCategory(category, categoryNames[category] ?? category)
                   }
                 />
-                <button
-                  className="button secondary"
-                  onClick={() =>
-                    renameCategory(category, categoryNames[category] ?? category)
-                  }
-                >
-                  Rename
-                </button>
               </div>
               <button
                 className="button ghost"
@@ -1482,14 +1474,22 @@ const TimelineFields = React.memo(function TimelineFields({
                   >
                     <div
                       style={{
-                        display: "flex",
-                        justifyContent: "space-between",
+                        display: "grid",
+                        gridTemplateColumns: "1fr auto",
                         alignItems: "center",
+                        gap: "12px",
                         marginBottom: "8px",
                       }}
                     >
-                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "8px" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                         <div style={{ fontWeight: 700 }}>{points} pts</div>
+                      </div>
+                      <div style={{ display: "flex", alignItems: "center", gap: "8px", justifyContent: "flex-end" }}>
+                        {q?.answered && (
+                          <span style={{ color: "#f2c14f", fontSize: "0.9rem" }}>
+                            marked answered
+                          </span>
+                        )}
                         <select
                           value={q?.type ?? "standard"}
                           onChange={(e) =>
@@ -1509,11 +1509,6 @@ const TimelineFields = React.memo(function TimelineFields({
                           <option value="audio">Audio</option>
                         </select>
                       </div>
-                      {q?.answered && (
-                        <span style={{ color: "#f2c14f", fontSize: "0.9rem" }}>
-                          marked answered
-                        </span>
-                      )}
                     </div>
                     {(q?.type ?? "standard") === "standard" && (
                       <StandardFields
