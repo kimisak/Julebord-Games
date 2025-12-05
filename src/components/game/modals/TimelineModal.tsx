@@ -132,7 +132,7 @@ export function TimelineModal({
               <div style={{ fontSize: "2rem" }}>{basePoints ?? points} pts</div>
               {typeof potentialScore === "number" && (
                 <span style={{ fontSize: "1rem", color: "var(--muted)" }}>
-                  Potential: {potentialScore} pts
+                  Current score: {potentialScore} pts
                 </span>
               )}
             </div>
