@@ -1491,7 +1491,7 @@ const TimelineFields = React.memo(function TimelineFields({
             point value.
           </p>
         </div>
-        <button className="button ghost" onClick={resetAnsweredFlags}>
+        <button className="button ghost" onClick={resetAnsweredFlags} style={{ cursor: "pointer" }}>
           Reset answered flags
         </button>
       </div>
@@ -1555,6 +1555,7 @@ const TimelineFields = React.memo(function TimelineFields({
               <button
                 className="button ghost"
                 onClick={() => deleteCategory(category)}
+                style={{ cursor: "pointer" }}
               >
                 Delete category
               </button>
