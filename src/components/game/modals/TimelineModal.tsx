@@ -16,6 +16,9 @@ type Props = {
   onClose: () => void;
   disableActions?: boolean;
   winnerName?: string | null;
+  winnerTeamId?: string | null;
+  winnerTeamColor?: string | null;
+  winnerTeamEmoji?: string | null;
   points?: number;
   rotateInfo?: boolean;
   noWinner?: boolean;
@@ -38,6 +41,9 @@ export function TimelineModal({
   onClose,
   disableActions,
   winnerName,
+  winnerTeamId,
+  winnerTeamColor,
+  winnerTeamEmoji,
   points,
   rotateInfo,
   noWinner,
@@ -140,10 +146,8 @@ export function TimelineModal({
           {title ? (
             <div style={{ fontWeight: 800, fontSize: "1.2rem" }}>{title}</div>
           ) : null}
-          {winnerName ? (
-            <div style={{ color: "#f2c14f", fontSize: "0.95rem", fontWeight: 700 }}>
-              Winner: {winnerName}
-            </div>
+          {winnerName && winnerTeamId ? (
+            <TeamPill label="Winner" name={winnerName} color={winnerTeamColor ?? "#f2c14f"} emoji={winnerTeamEmoji ?? "⭐️"} />
           ) : currentTeamName ? (
             <TeamPill label="Guessing" name={currentTeamName} color={currentTeamColor} emoji={currentTeamEmoji} />
           ) : null}

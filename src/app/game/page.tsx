@@ -65,6 +65,7 @@ export default function GameBoardPage() {
   const [timelineTeamIndex, setTimelineTeamIndex] = useState(0);
   const [timelineLastCorrectTeamId, setTimelineLastCorrectTeamId] = useState<string | null>(null);
   const [timelineWinnerName, setTimelineWinnerName] = useState<string | null>(null);
+  const [timelineWinnerId, setTimelineWinnerId] = useState<string | null>(null);
   const [timelineNoWinner, setTimelineNoWinner] = useState(false);
   const [timelinePotential, setTimelinePotential] = useState<number>(0);
   const [showFinalLeaderboard, setShowFinalLeaderboard] = useState(false);
@@ -330,6 +331,7 @@ export default function GameBoardPage() {
       setTimelineTeamIndex(0);
       setTimelineLastCorrectTeamId(null);
       setTimelineWinnerName(null);
+      setTimelineWinnerId(null);
       setTimelineNoWinner(false);
       setTimelinePotential(question.points ?? 0);
       const boardId =
@@ -796,6 +798,7 @@ export default function GameBoardPage() {
       if (winner) {
         const winnerTeam = teams.find((t) => t.id === winner);
         setTimelineWinnerName(winnerTeam?.name ?? null);
+        setTimelineWinnerId(winnerTeam?.id ?? null);
         setTimelineNoWinner(false);
         setTeams((teamsPrev) =>
           teamsPrev.map((t) =>
@@ -804,6 +807,7 @@ export default function GameBoardPage() {
         );
       } else {
         setTimelineWinnerName(null);
+        setTimelineWinnerId(null);
         setTimelineNoWinner(true);
       }
       setQuestions((qs) =>
@@ -950,6 +954,13 @@ export default function GameBoardPage() {
           onClose={closeModal}
           disableActions={!timelineTeamId}
           winnerName={timelineWinnerName}
+          winnerTeamId={timelineWinnerId}
+          winnerTeamColor={
+            timelineWinnerId ? teams.find((t) => t.id === timelineWinnerId)?.accentBase : undefined
+          }
+          winnerTeamEmoji={
+            timelineWinnerId ? teams.find((t) => t.id === timelineWinnerId)?.badgeEmoji : undefined
+          }
           points={activeQuestion.points}
           rotateInfo={activeQuestion.timelineRotateOnMiss ?? true}
           noWinner={timelineNoWinner}
