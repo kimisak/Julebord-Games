@@ -1490,32 +1490,29 @@ const TimelineFields = React.memo(function TimelineFields({
                             marked answered
                           </span>
                         )}
-                        <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: "4px" }}>
-                          <span style={{ color: "var(--muted)", fontSize: "0.85rem" }}>Type</span>
-                          <select
-                            value={q?.type ?? "standard"}
-                            onChange={(e) =>
-                              upsertQuestion(category, points, {
-                                type: e.target.value as Question["type"],
-                              })
-                            }
-                            className="input"
-                            style={{
-                              maxWidth: "180px",
-                              padding: "0.45rem 0.6rem",
-                              appearance: "auto",
-                              WebkitAppearance: "auto",
-                            }}
-                          >
-                            <option value="standard">Standard</option>
-                            <option value="lyrics">Text grid</option>
-                            <option value="geoguesser">Geoguesser</option>
-                            <option value="joker">Joker high/low</option>
-                            <option value="timeline">Timeline</option>
-                            <option value="mcq">Multiple choice</option>
-                            <option value="audio">Audio</option>
-                          </select>
-                        </div>
+                        <select
+                          value={q?.type ?? "standard"}
+                          onChange={(e) =>
+                            upsertQuestion(category, points, {
+                              type: e.target.value as Question["type"],
+                            })
+                          }
+                          className="input"
+                          style={{
+                            maxWidth: "180px",
+                            padding: "0.45rem 0.6rem",
+                            appearance: "auto",
+                            WebkitAppearance: "auto",
+                          }}
+                        >
+                          <option value="standard">Standard</option>
+                          <option value="lyrics">Text grid</option>
+                          <option value="geoguesser">Geoguesser</option>
+                          <option value="joker">Joker high/low</option>
+                          <option value="timeline">Timeline</option>
+                          <option value="mcq">Multiple choice</option>
+                          <option value="audio">Audio</option>
+                        </select>
                       </div>
                     </div>
                     {(q?.type ?? "standard") === "standard" && (
