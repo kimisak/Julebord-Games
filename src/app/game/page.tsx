@@ -793,6 +793,8 @@ export default function GameBoardPage() {
               : 0;
           winner = orderList[nextIdx];
         }
+      } else {
+        winner = currentTeamId;
       }
 
       if (winner) {
