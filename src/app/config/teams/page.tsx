@@ -261,13 +261,14 @@ export default function TeamConfigPage() {
             className="button ghost"
             onClick={startShuffling}
             disabled={isShuffling}
+            style={{ cursor: "pointer" }}
           >
             {shuffleLabel()}
           </button>
-          <button className="button ghost" onClick={resetTurnOrder} title="Clears board turn order so you must spin again on the board">
+          <button className="button ghost" onClick={resetTurnOrder} title="Clears board turn order so you must spin again on the board" style={{ cursor: "pointer" }}>
             Reset turn order
           </button>
-          <button className="button primary" onClick={addTeam}>
+          <button className="button primary" onClick={addTeam} style={{ cursor: "pointer" }}>
             + Add team
           </button>
         </div>
@@ -303,6 +304,7 @@ export default function TeamConfigPage() {
                   placeItems: "center",
                   padding: 0,
                   lineHeight: 1,
+                  cursor: "pointer",
                 }}
                 aria-label={`Remove ${team.name}`}
               >
@@ -327,11 +329,12 @@ export default function TeamConfigPage() {
                     placeholder="Team name"
                   />
                 </div>
-                <div style={{ minWidth: "140px" }}>
+                <div style={{ minWidth: "140px", position: "relative" }}>
                   <label className="label">Emoji</label>
                   <select
                     className="input"
                     value={team.badgeEmoji ?? ""}
+                    style={{ paddingRight: "26px", cursor: "pointer" }}
                     onChange={(e) => {
                       const choice = emojiOptions.find((opt) => opt.emoji === e.target.value);
                       setTeams((prev) =>
@@ -354,6 +357,19 @@ export default function TeamConfigPage() {
                       </option>
                     ))}
                   </select>
+                  <span
+                    aria-hidden
+                    style={{
+                      position: "absolute",
+                      right: "10px",
+                      bottom: "10px",
+                      pointerEvents: "none",
+                      color: "var(--muted)",
+                      fontSize: "0.9rem",
+                    }}
+                  >
+                    ▼
+                  </span>
                 </div>
                 <div style={{ minWidth: "320px", flex: 1 }}>
                   <label className="label">Preview</label>
@@ -435,7 +451,7 @@ export default function TeamConfigPage() {
                     <button
                       className="button ghost"
                       onClick={() => removePlayer(team.id, player.id)}
-                      style={{ paddingInline: "10px" }}
+                      style={{ paddingInline: "10px", cursor: "pointer" }}
                       aria-label={`Remove ${player.name}`}
                     >
                       –
@@ -445,7 +461,7 @@ export default function TeamConfigPage() {
                 <button
                   className="button secondary"
                   onClick={() => addPlayer(team.id)}
-                  style={{ width: "fit-content" }}
+                  style={{ width: "fit-content", cursor: "pointer" }}
                 >
                   + Add player
                 </button>
