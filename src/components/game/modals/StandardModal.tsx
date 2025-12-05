@@ -152,15 +152,6 @@ export function StandardModal({
                 flexWrap: "wrap",
               }}
             >
-              {backImage && (
-                <button
-                  className="button secondary"
-                  onClick={() => setShowAnswerImage((prev) => !prev)}
-                  style={{ minWidth: "160px" }}
-                >
-                  {showAnswerImage ? "Show question image" : "Show answer image"}
-                </button>
-              )}
               <button className="button ghost" onClick={onClose}>
                 Close
               </button>
