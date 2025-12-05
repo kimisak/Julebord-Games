@@ -1604,15 +1604,13 @@ const TimelineFields = React.memo(function TimelineFields({
                                 type: e.target.value as Question["type"],
                               })
                             }
-                            className="input"
-                            style={{
-                              width: "100%",
-                              padding: "0.45rem 2rem 0.45rem 0.6rem",
-                              appearance: "auto",
-                              WebkitAppearance: "auto",
-                              cursor: "pointer",
-                            }}
-                          >
+                          className="input"
+                          style={{
+                            width: "100%",
+                            padding: "0.45rem 2rem 0.45rem 0.6rem",
+                            cursor: "pointer",
+                          }}
+                        >
                             <option value="standard">Standard</option>
                             <option value="lyrics">Text grid</option>
                             <option value="geoguesser">Geoguesser</option>
