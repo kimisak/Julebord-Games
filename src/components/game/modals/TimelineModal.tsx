@@ -134,12 +134,25 @@ export function TimelineModal({
             {category ? `${category} · Timeline` : "Timeline"}
           </div>
           {(basePoints || points) && (
-            <div style={{ display: "flex", alignItems: "baseline", gap: "10px", fontWeight: 800 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "10px", fontWeight: 800, flexWrap: "wrap" }}>
               <div style={{ fontSize: "2rem" }}>{basePoints ?? points} pts</div>
               {!rotateInfo && typeof potentialScore === "number" && (
-                <span style={{ fontSize: "1rem", color: "var(--muted)" }}>
-                  Current score: {potentialScore} pts
-                </span>
+                <div
+                  style={{
+                    fontSize: "0.95rem",
+                    color: "#e0f2fe",
+                    background: "rgba(14,165,233,0.16)",
+                    border: "1px solid rgba(14,165,233,0.35)",
+                    borderRadius: "999px",
+                    padding: "6px 10px",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "6px",
+                  }}
+                >
+                  <span style={{ fontWeight: 700 }}>Current score</span>
+                  <span style={{ fontWeight: 800 }}>{potentialScore} pts</span>
+                </div>
               )}
             </div>
           )}
@@ -156,15 +169,25 @@ export function TimelineModal({
 
       <div
         style={{
-          padding: "12px",
+          padding: "10px 12px",
           borderRadius: "12px",
           border: "1px solid rgba(255,255,255,0.12)",
           background: "rgba(255,255,255,0.03)",
           marginBottom: "12px",
           color: "var(--muted)",
+          fontSize: "0.95rem",
+          lineHeight: 1.45,
         }}
       >
-        Drag to place the event on/around the correct year. Wrong guesses are marked and {rotateInfo ? "pass play to the next team." : "stay with the same team."} When the final event is placed, the current team earns the points if correct; otherwise the next team in order claims them.
+        {rotateInfo ? (
+          <>
+            Drag events to their correct spot on the timeline. Wrong guesses are marked and play passes to the next team. When the last event is placed, the current team wins the points only if correct; otherwise the next team claims them.
+          </>
+        ) : (
+          <>
+            Drag events to their correct spot on the timeline. Wrong guesses stay with the same team and reduce the current score. The current team only wins the remaining points if the final event is correct.
+          </>
+        )}
       </div>
 
       <div
