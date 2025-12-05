@@ -84,6 +84,7 @@ export function TimelineModal({
 
   const remainingCount = queue.length;
   const totalCount = combined.length + remainingCount - 1; // minus center pivot
+  const placedCount = Math.max(0, totalCount - remainingCount);
 
   const renderDropZone = (slot: { index: number; onYear?: number }, size: "thin" | "wide" = "thin") => (
     <div
@@ -155,6 +156,26 @@ export function TimelineModal({
                 >
                   <span style={{ fontWeight: 700 }}>Current score</span>
                   <span style={{ fontWeight: 800 }}>{potentialScore} pts</span>
+                </div>
+              )}
+              {totalCount > 0 && (
+                <div
+                  style={{
+                    fontSize: "0.95rem",
+                    color: "#e5e7eb",
+                    background: "rgba(255,255,255,0.08)",
+                    border: "1px solid rgba(255,255,255,0.16)",
+                    borderRadius: "999px",
+                    padding: "6px 10px",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "6px",
+                  }}
+                >
+                  <span style={{ fontWeight: 700 }}>Progress</span>
+                  <span style={{ fontWeight: 800 }}>
+                    {placedCount} / {totalCount}
+                  </span>
                 </div>
               )}
             </div>
@@ -245,13 +266,8 @@ export function TimelineModal({
                   boxShadow: "0 6px 14px rgba(0,0,0,0.25)",
                 }}
               >
-                <div style={{ fontWeight: 800, color: textColor, display: "flex", justifyContent: "space-between", gap: "6px", alignItems: "center" }}>
-                  <span>{formatYear(group.year)}</span>
-                  {group.side !== "center" && totalCount > 0 && (
-                    <span style={{ color: "var(--muted)", fontSize: "0.82rem" }}>
-                      {totalCount - remainingCount} / {totalCount}
-                    </span>
-                  )}
+                <div style={{ fontWeight: 800, color: textColor, textAlign: "center" }}>
+                  {formatYear(group.year)}
                 </div>
                 <div style={{ display: "grid", gap: "6px", marginTop: "6px" }}>
                   {group.events.map((ev, i) => (
