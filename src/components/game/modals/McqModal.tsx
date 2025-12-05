@@ -67,6 +67,7 @@ const optionColors = useMemo(() => {
   const backImage = hasAnswerImage
     ? { src: question.answerImageData, alt: question.answerImageName || "Answer image" }
     : frontImage;
+  const blurFront = hasAnswerImage && !hasQuestionImage;
 
   return (
     <div
@@ -134,6 +135,7 @@ const optionColors = useMemo(() => {
                 borderRadius: "12px",
                 overflow: "hidden",
                 border: "1px solid rgba(255,255,255,0.1)",
+                filter: blurFront ? "blur(6px) brightness(0.7)" : "none",
               }}
             >
               <img
@@ -146,7 +148,23 @@ const optionColors = useMemo(() => {
                   background: "rgba(0,0,0,0.3)",
                   display: "block",
                 }}
-              />
+                />
+              {blurFront && (
+                <div
+                  style={{
+                    position: "absolute",
+                    inset: 0,
+                    display: "grid",
+                    placeItems: "center",
+                    background: "rgba(0,0,0,0.35)",
+                    color: "#e2e8f0",
+                    fontWeight: 700,
+                    letterSpacing: "0.02em",
+                  }}
+                >
+                  Answer hidden
+                </div>
+              )}
             </div>
             {backImage && (
               <div
