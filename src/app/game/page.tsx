@@ -762,10 +762,17 @@ export default function GameBoardPage() {
       playSuccessChime();
     } else {
       playDownbeat();
+      // If teams are not rotating on miss, progressively lower the potential score.
+      const rotateOnMiss = activeQuestion.timelineRotateOnMiss ?? true;
+      if (!rotateOnMiss) {
+        const basePoints = activeQuestion.points ?? timelinePotential ?? 0;
+        const eventCount = Math.max(1, activeQuestion.timelineEvents?.length ?? 1);
+        const decrement = Math.ceil(basePoints / eventCount);
+        setTimelinePotential((prev) => Math.max(0, prev - decrement));
+      }
     }
 
     setTimelineQueue(remaining);
-    const rotateOnMiss = activeQuestion.timelineRotateOnMiss ?? true;
     if (!correct && remaining.length > 0 && rotateOnMiss) {
       advanceTimelineTeam();
     }
