@@ -1596,30 +1596,46 @@ const TimelineFields = React.memo(function TimelineFields({
                             marked answered
                           </span>
                         )}
-                        <select
-                          value={q?.type ?? "standard"}
-                          onChange={(e) =>
-                            upsertQuestion(category, points, {
-                              type: e.target.value as Question["type"],
-                            })
-                          }
-                          className="input"
-                          style={{
-                            maxWidth: "180px",
-                            padding: "0.45rem 0.6rem",
-                            appearance: "auto",
-                            WebkitAppearance: "auto",
-                            cursor: "pointer",
-                          }}
-                        >
-                          <option value="standard">Standard</option>
-                          <option value="lyrics">Text grid</option>
-                          <option value="geoguesser">Geoguesser</option>
-                          <option value="joker">Joker high/low</option>
-                          <option value="timeline">Timeline</option>
-                          <option value="mcq">Multiple choice</option>
-                          <option value="audio">Audio</option>
-                        </select>
+                        <div style={{ position: "relative", minWidth: "180px" }}>
+                          <select
+                            value={q?.type ?? "standard"}
+                            onChange={(e) =>
+                              upsertQuestion(category, points, {
+                                type: e.target.value as Question["type"],
+                              })
+                            }
+                            className="input"
+                            style={{
+                              width: "100%",
+                              padding: "0.45rem 2rem 0.45rem 0.6rem",
+                              appearance: "auto",
+                              WebkitAppearance: "auto",
+                              cursor: "pointer",
+                            }}
+                          >
+                            <option value="standard">Standard</option>
+                            <option value="lyrics">Text grid</option>
+                            <option value="geoguesser">Geoguesser</option>
+                            <option value="joker">Joker high/low</option>
+                            <option value="timeline">Timeline</option>
+                            <option value="mcq">Multiple choice</option>
+                            <option value="audio">Audio</option>
+                          </select>
+                          <span
+                            aria-hidden
+                            style={{
+                              position: "absolute",
+                              right: "10px",
+                              top: "50%",
+                              transform: "translateY(-50%)",
+                              pointerEvents: "none",
+                              color: "var(--muted)",
+                              fontSize: "0.9rem",
+                            }}
+                          >
+                            ▼
+                          </span>
+                        </div>
                       </div>
                     </div>
                     {(q?.type ?? "standard") === "standard" && (
