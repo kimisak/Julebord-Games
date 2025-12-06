@@ -285,7 +285,9 @@ const optionColors = useMemo(() => {
             </span>
           </div>
         ) : options.length === 4 ? (
-          "Wrong answers pass to the next team. First correct wins the points."
+          eliminated.length > 0
+            ? "Wrong answers pass to the next team. First correct wins the points."
+            : "First correct wins the points. If enabled, wrong answers pass to the next team."
         ) : (
           "Two-option mode: a wrong answer ends the question and costs points."
         )}
