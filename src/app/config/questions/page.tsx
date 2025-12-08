@@ -5,8 +5,6 @@ import { usePersistentState } from "@/hooks/usePersistentState";
 import { QUESTION_STORAGE_KEY } from "@/lib/storage";
 import { POINT_VALUES, type PointValue, type Question } from "@/lib/types";
 
-const starterCategories = ["Traditions", "Food & Drink", "Music", "Wildcards"];
-
 function makeId(prefix: string) {
   return `${prefix}-${(globalThis.crypto?.randomUUID?.() ?? Math.random().toString(16).slice(2))}`;
 }
@@ -33,47 +31,114 @@ type FieldProps = {
 };
 
 function buildDefaultQuestions(): Question[] {
-  const rows: Question[] = [];
-  starterCategories.forEach((category) => {
-    POINT_VALUES.forEach((points) => {
-      rows.push({
-        id: makeId("q"),
-        category,
-        points,
-        prompt: "",
-        answer: "",
-        answered: false,
-        imageData: null,
-        imageName: null,
-        answerImageData: null,
-        answerImageName: null,
-        type: "standard",
-        lyricsSegments: [],
-        mapEmbedUrl: null,
-        answerLocationLabel: null,
-        answerLocationUrl: null,
-        answerVideoUrl: null,
-        answerVideoAutoplay: true,
-        geoUnlockCost: 0,
-        jokerCount: 5,
-        jokerMin: 1,
-        jokerMax: 9,
-        jokerIncrement: 100,
-        timelineCenterYear: 2000,
-        timelineCenterLabel: "Center year",
-        timelineTitle: "Timeline",
-        timelineEvents: [],
-        jokerRotateOnMiss: true,
-        timelineRotateOnMiss: true,
-        mcqOptions: [],
-        mcqCorrectIndex: 0,
-        audioUrl: null,
-        audioStopSeconds: null,
-        audioStartSeconds: null,
-      });
-    });
+  const category = "Jul i Norge";
+  const base = (points: PointValue): Question => ({
+    id: makeId("q"),
+    category,
+    points,
+    prompt: "",
+    answer: "",
+    answered: false,
+    imageData: null,
+    imageName: null,
+    answerImageData: null,
+    answerImageName: null,
+    type: "standard",
+    lyricsSegments: [],
+    mapEmbedUrl: null,
+    answerLocationLabel: null,
+    answerLocationUrl: null,
+    answerVideoUrl: null,
+    answerVideoAutoplay: true,
+    geoUnlockCost: 0,
+    jokerCount: 5,
+    jokerMin: 1,
+    jokerMax: 9,
+    jokerIncrement: 100,
+    timelineCenterYear: 1985,
+    timelineCenterLabel: "Midten av 1900-tallet",
+    timelineTitle: "Jul i Norge",
+    timelineEvents: [],
+    jokerRotateOnMiss: true,
+    timelineRotateOnMiss: true,
+    mcqOptions: [],
+    mcqCorrectIndex: 0,
+    audioUrl: null,
+    audioStopSeconds: null,
+    audioStartSeconds: null,
   });
-  return rows;
+
+  return [
+    {
+      ...base(100),
+      type: "standard",
+      prompt:
+        "Hvilket krydder gir pepperkaker smaken sin, og var en luksusvare i Norge før julen ble kommersialisert?",
+      answer: "Ingefær (med nellik og kanel som støtter smaker).",
+    },
+    {
+      ...base(200),
+      type: "mcq",
+      prompt: "Hvor mange slag julekaker sier tradisjonen at man bør bake?",
+      mcqOptions: ["7 slag", "9 slag", "11 slag", "13 slag"],
+      mcqCorrectIndex: 0,
+      mcqRotateOnMiss: true,
+      answer: "7 slag",
+    },
+    {
+      ...base(300),
+      type: "lyrics",
+      prompt: "Fullfør linjene fra den norske julesangen.",
+      lyricsSegments: [
+        "På låven sitter nissen",
+        "med sin julegrøt så god, så god og søt",
+        "han nikker, og han smiler",
+        "og han er så glad i grøt",
+      ],
+      answer: "På låven sitter nissen med sin julegrøt",
+    },
+    {
+      ...base(400),
+      type: "timeline",
+      prompt: "Plasser hendelsene om norske juletradisjoner i riktig rekkefølge.",
+      timelineCenterYear: 1985,
+      timelineCenterLabel: "Midten av 1900-tallet",
+      timelineTitle: "Jul i Norge",
+      timelineEvents: [
+        {
+          id: makeId("tl"),
+          text: "Norge sender første julegran til London etter krigen",
+          year: 1947,
+          timelineText: "1947: Treet til Trafalgar Square",
+        },
+        {
+          id: makeId("tl"),
+          text: "\"Tre nøtter til Askepott\" blir fast på NRK",
+          year: 1973,
+          timelineText: "1973: TV-tradisjonen starter",
+        },
+        {
+          id: makeId("tl"),
+          text: "NRK introduserer moderne julekalender-serier i primetime",
+          year: 2016,
+          timelineText: "2016: \"Snøfall\" blir en ny tradisjon",
+        },
+      ],
+      answer:
+        "Kronologi: 1947 (julegran til London), 1973 (Tre nøtter til Askepott), 2016 (Snøfall).",
+    },
+    {
+      ...base(500),
+      type: "geoguesser",
+      prompt: "Hvor i Norge er dette ikoniske julepyntede stedet?",
+      mapEmbedUrl:
+        "https://www.openstreetmap.org/export/embed.html?bbox=5.3211%2C60.3975%2C5.3273%2C60.4013&layer=mapnik&marker=60.3994%2C5.3242",
+      answerLocationLabel: "Bryggen i Bergen",
+      answerLocationUrl:
+        "https://www.openstreetmap.org/?mlat=60.3994&mlon=5.3242#map=17/60.3994/5.3242",
+      answer: "Bryggen i Bergen",
+    },
+  ];
 }
 
 const McqFields = React.memo(function McqFields({
@@ -387,8 +452,8 @@ export default function QuestionConfigPage() {
 
   useEffect(() => {
     if (!isClient) return;
-    // no automatic seeding; keep storage empty if user cleared categories
-  }, [isClient]);
+    setQuestions((prev) => (prev.length === 0 ? buildDefaultQuestions() : prev));
+  }, [isClient, setQuestions]);
 
   const categories = useMemo(() => {
     const list = isClient ? questions : [];
