@@ -1,6 +1,6 @@
 # Julebord Games
 
-Lightweight holiday party game board built with Next.js 14 (App Router + TypeScript). Configure teams and categories, then run the game with a slot-machine turn order picker, question modals, timelines, audio clips, text grids, and more. State (teams, questions, turn order) is stored in the browser via `localStorage`.
+Lightweight holiday party game board built with Next.js 16 (App Router + TypeScript). Configure teams and categories, then run the game with a slot-machine turn order picker, question modals, timelines, audio clips, text grids, and more. State (teams, questions, turn order) is stored in the browser via `localStorage`.
 
 ## Quick start
 
