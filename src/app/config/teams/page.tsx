@@ -4,78 +4,8 @@ import { useEffect, useMemo, useState } from "react";
 import { usePersistentState } from "@/hooks/usePersistentState";
 import { TEAM_STORAGE_KEY, TURN_STATE_STORAGE_KEY } from "@/lib/storage";
 import type { Player, Team } from "@/lib/types";
+import { emojiOptions, buildDefaultTeams, makeId } from "@/lib/defaultData";
 import { TeamPill } from "@/components/game/TeamPill";
-
-const emojiOptions = [
-  { emoji: "🎄", label: "Tree", base: "#0b8a3b", glow: "#d1fae5" },
-  { emoji: "⭐️", label: "Star", base: "#b8860b", glow: "#ffe29f" },
-  { emoji: "🔔", label: "Bell", base: "#b03060", glow: "#ffd6e0" },
-  { emoji: "❄️", label: "Snow", base: "#0f4c75", glow: "#b0e0ff" },
-  { emoji: "🎁", label: "Gift", base: "#b9001f", glow: "#f7c948" },
-  { emoji: "🕯️", label: "Candle", base: "#f4a259", glow: "#ffe8c2" },
-  { emoji: "🎅", label: "Santa", base: "#d62828", glow: "#ffb3b3" },
-  { emoji: "😇", label: "Angel", base: "#cbbaf0", glow: "#f2eaff" },
-  { emoji: "☃️", label: "Snowman", base: "#4ba3c7", glow: "#d9f2ff" },
-  { emoji: "🍷", label: "Wine", base: "#6b2737", glow: "#f5c3d0" },
-  { emoji: "🍺", label: "Beer", base: "#d19c1d", glow: "#ffeac2" },
-  { emoji: "🦌", label: "Reindeer", base: "#8b5a2b", glow: "#f3d6b3" },
-  { emoji: "🍪", label: "Cookie", base: "#c68642", glow: "#ffe3c4" },
-  { emoji: "🥛", label: "Milk", base: "#9bc4f5", glow: "#e9f5ff" },
-  { emoji: "🥕", label: "Carrot", base: "#f7931e", glow: "#ffe0b3" },
-  { emoji: "💝", label: "Heart Bow", base: "#ff5c8a", glow: "#ffd1e6" },
-  { emoji: "🛷", label: "Sleigh", base: "#b22234", glow: "#ffd7c2" },
-  { emoji: "📜", label: "Scroll", base: "#d7b468", glow: "#fff4cf" },
-  { emoji: "🍬", label: "Candy", base: "#ff6fb7", glow: "#ffd6ec" },
-  { emoji: "🌠", label: "Shooting Star", base: "#4f46e5", glow: "#c7d2fe" },
-];
-
-function makeId(prefix: string) {
-  return `${prefix}-${(globalThis.crypto?.randomUUID?.() ?? Math.random().toString(16).slice(2))}`;
-}
-
-function createDefaultTeams(): Team[] {
-  return [
-    {
-      id: makeId("team"),
-      name: "Pepperkakelaget",
-      score: 0,
-      badgeEmoji: emojiOptions[12].emoji,
-      accentBase: emojiOptions[12].base,
-      accentGlow: emojiOptions[12].glow,
-      players: [
-        { id: makeId("p"), name: "Player 1" },
-        { id: makeId("p"), name: "Player 2" },
-        { id: makeId("p"), name: "Player 3" },
-      ],
-    },
-    {
-      id: makeId("team"),
-      name: "Stjerneskudd",
-      score: 0,
-      badgeEmoji: emojiOptions[19].emoji,
-      accentBase: emojiOptions[19].base,
-      accentGlow: emojiOptions[19].glow,
-      players: [
-        { id: makeId("p"), name: "Player 1" },
-        { id: makeId("p"), name: "Player 2" },
-        { id: makeId("p"), name: "Player 3" },
-      ],
-    },
-    {
-      id: makeId("team"),
-      name: "Bjelleklang",
-      score: 0,
-      badgeEmoji: emojiOptions[2].emoji,
-      accentBase: emojiOptions[2].base,
-      accentGlow: emojiOptions[2].glow,
-      players: [
-        { id: makeId("p"), name: "Player 1" },
-        { id: makeId("p"), name: "Player 2" },
-        { id: makeId("p"), name: "Player 3" },
-      ],
-    },
-  ];
-}
 
 export default function TeamConfigPage() {
   const [hydrated, setHydrated] = useState(false);
@@ -90,7 +20,7 @@ export default function TeamConfigPage() {
     const id = setTimeout(() => {
       setHydrated(true);
       if (teams.length === 0) {
-        setTeams(createDefaultTeams());
+        setTeams(buildDefaultTeams());
       }
     }, 0);
     return () => clearTimeout(id);
