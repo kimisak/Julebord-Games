@@ -11,6 +11,27 @@ function makeId(prefix: string) {
   return `${prefix}-${(globalThis.crypto?.randomUUID?.() ?? Math.random().toString(16).slice(2))}`;
 }
 
+type FieldProps = {
+  category: string;
+  points: PointValue;
+  q: Question | undefined;
+  upsertQuestion: (
+    category: string,
+    points: PointValue,
+    updates: Partial<Question>,
+  ) => void;
+  handleImageChange?: (
+    category: string,
+    points: PointValue,
+    file: File | null,
+  ) => void;
+  handleAnswerImageChange?: (
+    category: string,
+    points: PointValue,
+    file: File | null,
+  ) => void;
+};
+
 function buildDefaultQuestions(): Question[] {
   const rows: Question[] = [];
   starterCategories.forEach((category) => {
@@ -589,27 +610,6 @@ export default function QuestionConfigPage() {
       });
     };
     reader.readAsDataURL(file);
-  };
-
-type FieldProps = {
-  category: string;
-  points: PointValue;
-  q: Question | undefined;
-  upsertQuestion: (
-    category: string,
-    points: PointValue,
-    updates: Partial<Question>,
-  ) => void;
-  handleImageChange?: (
-    category: string,
-    points: PointValue,
-    file: File | null,
-  ) => void;
-  handleAnswerImageChange?: (
-    category: string,
-    points: PointValue,
-    file: File | null,
-  ) => void;
 };
 
 const StandardFields = React.memo(function StandardFields({
