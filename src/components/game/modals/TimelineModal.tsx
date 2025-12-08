@@ -3,15 +3,17 @@
 import type { TimelineEvent } from "@/lib/types";
 import { TeamPill } from "@/components/game/TeamPill";
 
+type PlacedEvent = TimelineEvent & { status?: "correct" | "wrong" };
+
 type Props = {
   category?: string;
   centerYear: number;
   currentTeamName?: string;
   currentTeamColor?: string;
   currentTeamEmoji?: string | null;
-  queue: TimelineEvent[];
-  placedLeft: TimelineEvent[];
-  placedRight: TimelineEvent[];
+  queue: PlacedEvent[];
+  placedLeft: PlacedEvent[];
+  placedRight: PlacedEvent[];
   onPlace: (slot: { index: number; onYear?: number | null }) => void;
   onClose: () => void;
   disableActions?: boolean;
