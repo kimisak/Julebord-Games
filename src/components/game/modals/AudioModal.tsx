@@ -162,19 +162,25 @@ export function AudioModal({
   }, []);
 
   useEffect(() => {
-    if (showAnswer) {
-      stopPlayback();
-      setHiddenSrc("");
-      setPlayKey((k) => k + 1);
-    }
+    const id = setTimeout(() => {
+      if (showAnswer) {
+        stopPlayback();
+        setHiddenSrc("");
+        setPlayKey((k) => k + 1);
+      }
+    }, 0);
+    return () => clearTimeout(id);
   }, [showAnswer]);
 
   useEffect(() => {
-    // Reset hidden src when question changes; no autoplay
-    stopPlayback(true);
-    setHiddenSrc("");
-    setIsPlaying(false);
-    setRemaining(question.audioStopSeconds ?? DEFAULT_STOP_SECONDS);
+    const id = setTimeout(() => {
+      // Reset hidden src when question changes; no autoplay
+      stopPlayback(true);
+      setHiddenSrc("");
+      setIsPlaying(false);
+      setRemaining(question.audioStopSeconds ?? DEFAULT_STOP_SECONDS);
+    }, 0);
+    return () => clearTimeout(id);
   }, [embedUrl, question.audioStopSeconds]);
 
   return (

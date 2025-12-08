@@ -48,13 +48,9 @@ export function McqModal({
   const palette = ["#d94444", "#2c9b61", "#8a5adf", "#f2c14f"];
   const rotateOnMiss = question.mcqRotateOnMiss ?? hasFour;
   const optionColors = useMemo(() => {
-    const arr = [...palette];
-    for (let i = arr.length - 1; i > 0; i -= 1) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [arr[i], arr[j]] = [arr[j], arr[i]];
-  }
-  return arr.slice(0, options.length);
-}, [question.id, options.length]);
+    // Keep deterministic order to avoid impure randomness during render
+    return palette.slice(0, options.length);
+  }, [palette, options.length]);
 
   const hasAnswerImage = Boolean(question.answerImageData);
   const hasQuestionImage = Boolean(question.imageData);

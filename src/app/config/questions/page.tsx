@@ -95,12 +95,15 @@ const McqFields = React.memo(function McqFields({
   const [rotateOnMiss, setRotateOnMiss] = useState<boolean>(q?.mcqRotateOnMiss ?? true);
 
   useEffect(() => {
-    const base = q?.mcqOptions && q.mcqOptions.length ? q.mcqOptions : ["", ""];
-    const normalized = base.slice(0, 4).concat(new Array(Math.max(0, 4 - base.length)).fill(""));
-    setOptions(normalized);
-    setOptionCount(Math.max(2, Math.min(4, q?.mcqOptions?.length || 2)));
-    setCorrectIndex(q?.mcqCorrectIndex ?? 0);
-    setRotateOnMiss(q?.mcqRotateOnMiss ?? true);
+    const id = setTimeout(() => {
+      const base = q?.mcqOptions && q.mcqOptions.length ? q.mcqOptions : ["", ""];
+      const normalized = base.slice(0, 4).concat(new Array(Math.max(0, 4 - base.length)).fill(""));
+      setOptions(normalized);
+      setOptionCount(Math.max(2, Math.min(4, q?.mcqOptions?.length || 2)));
+      setCorrectIndex(q?.mcqCorrectIndex ?? 0);
+      setRotateOnMiss(q?.mcqRotateOnMiss ?? true);
+    }, 0);
+    return () => clearTimeout(id);
   }, [q?.mcqOptions, q?.mcqCorrectIndex, q?.mcqRotateOnMiss]);
 
   const persist = (

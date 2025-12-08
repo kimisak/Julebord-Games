@@ -87,10 +87,13 @@ export default function TeamConfigPage() {
   const [shuffleMillisLeft, setShuffleMillisLeft] = useState<number | null>(null);
 
   useEffect(() => {
-    setHydrated(true);
-    if (teams.length === 0) {
-      setTeams(createDefaultTeams());
-    }
+    const id = setTimeout(() => {
+      setHydrated(true);
+      if (teams.length === 0) {
+        setTeams(createDefaultTeams());
+      }
+    }, 0);
+    return () => clearTimeout(id);
   }, [teams.length, setTeams]);
 
   const shuffleArray = <T,>(arr: T[]) => {
@@ -128,12 +131,12 @@ export default function TeamConfigPage() {
 
   useEffect(() => {
     if (!isShuffling || shuffleMillisLeft === null) return;
-    if (shuffleMillisLeft <= 0) {
-      setIsShuffling(false);
-      setShuffleMillisLeft(null);
-      return;
-    }
     const id = setTimeout(() => {
+      if (shuffleMillisLeft <= 0) {
+        setIsShuffling(false);
+        setShuffleMillisLeft(null);
+        return;
+      }
       shufflePlayersAcrossTeams();
       setShuffleMillisLeft((prev) => (prev !== null ? prev - 500 : prev));
     }, 500);

@@ -276,7 +276,7 @@ export default function GameBoardPage() {
     }
     if (question.type === "joker") {
       const count = Math.max(3, Math.min(9, question.jokerCount ?? 5));
-      let minVal = Number.isFinite(question.jokerMin) ? Number(question.jokerMin) : 1;
+      const minVal = Number.isFinite(question.jokerMin) ? Number(question.jokerMin) : 1;
       let maxVal = Number.isFinite(question.jokerMax) ? Number(question.jokerMax) : 9;
       if (minVal >= maxVal) {
         maxVal = minVal + 1;
