@@ -4,7 +4,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { usePersistentState } from "@/hooks/usePersistentState";
 import { QUESTION_STORAGE_KEY } from "@/lib/storage";
 import { POINT_VALUES, type PointValue, type Question } from "@/lib/types";
-import { buildDefaultQuestions, makeId } from "@/lib/defaultData";
+import { makeId } from "@/lib/defaultData";
 
 type FieldProps = {
   category: string;
@@ -322,7 +322,7 @@ export default function QuestionConfigPage() {
 
   useEffect(() => {
     if (!isClient) return;
-    setQuestions((prev) => (prev.length === 0 ? buildDefaultQuestions() : prev));
+    setQuestions((prev) => (Array.isArray(prev) ? prev : []));
   }, [isClient, setQuestions]);
 
   const categories = useMemo(() => {

@@ -21,7 +21,7 @@ import { useTurnState } from "@/hooks/useTurnState";
 import { generateRedPattern, shuffle } from "@/lib/redPattern";
 import { QUESTION_STORAGE_KEY, TEAM_STORAGE_KEY } from "@/lib/storage";
 import { type Question, type Team, type TimelineEvent } from "@/lib/types";
-import { buildDefaultQuestions, buildDefaultTeams } from "@/lib/defaultData";
+import { buildDefaultTeams } from "@/lib/defaultData";
 
 type ActiveQuestion = Question & { category: string };
 type PlacedTimelineEvent = TimelineEvent & {
@@ -87,7 +87,6 @@ export default function GameBoardPage() {
 
   useEffect(() => {
     setTeams((prev) => (prev.length === 0 ? buildDefaultTeams() : prev));
-    setQuestions((prev) => (prev.length === 0 ? buildDefaultQuestions() : prev));
   }, [setTeams, setQuestions]);
 
   const { turnState, setOrder, advanceBoard, advanceLyrics, setTurnState } = useTurnState();
