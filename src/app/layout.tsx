@@ -34,9 +34,6 @@ export default function RootLayout({
               <Link href="/" style={{ fontSize: "1.7rem", fontWeight: 800 }}>
                 🎄 Julebord Games
               </Link>
-              <span style={{ color: "var(--muted)", fontSize: "0.95rem" }}>
-                Jeopardy-style board
-              </span>
             </div>
             <nav
               style={{
