@@ -327,11 +327,8 @@ export default function QuestionConfigPage() {
 
   const categories = useMemo(() => {
     const list = isClient ? questions : [];
-    const existing = Array.from(new Set(list.map((q) => q.category)));
-    return newCategory && !existing.includes(newCategory)
-      ? [...existing, newCategory]
-      : existing;
-  }, [questions, newCategory, isClient]);
+    return Array.from(new Set(list.map((q) => q.category)));
+  }, [questions, isClient]);
 
   useEffect(() => {
     setCategoryNames((prev) => {
