@@ -4,6 +4,7 @@ import { useRef } from "react";
 
 export function useAudioCue() {
   const audioCtxRef = useRef<AudioContext | null>(null);
+  const slotSpinStopRef = useRef<(() => void) | null>(null);
 
   const ensureCtx = () => {
     try {
@@ -209,6 +210,62 @@ export function useAudioCue() {
     osc.stop(now + 0.36);
   };
 
+  const startSlotSpinLoop = () => {
+    const ctx = ensureCtx();
+    if (!ctx) return () => {};
+    if (slotSpinStopRef.current) {
+      slotSpinStopRef.current();
+    }
+    const now = ctx.currentTime;
+    const osc1 = ctx.createOscillator();
+    const osc2 = ctx.createOscillator();
+    const lfo = ctx.createOscillator();
+    const lfoGain = ctx.createGain();
+    const gain = ctx.createGain();
+
+    osc1.type = "triangle";
+    osc2.type = "sine";
+    lfo.type = "sine";
+
+    osc1.frequency.setValueAtTime(360, now);
+    osc2.frequency.setValueAtTime(720, now);
+    lfo.frequency.setValueAtTime(8, now);
+    lfoGain.gain.setValueAtTime(0.22, now);
+    gain.gain.setValueAtTime(0.18, now);
+
+    lfo.connect(lfoGain);
+    lfoGain.connect(gain.gain);
+    osc1.connect(gain);
+    osc2.connect(gain);
+    gain.connect(ctx.destination);
+
+    osc1.start(now);
+    osc2.start(now);
+    lfo.start(now);
+
+    let stopped = false;
+    const stop = () => {
+      if (stopped) return;
+      stopped = true;
+      const t = ctx.currentTime;
+      gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.25);
+      osc1.stop(t + 0.3);
+      osc2.stop(t + 0.3);
+      lfo.stop(t + 0.3);
+      slotSpinStopRef.current = null;
+    };
+
+    slotSpinStopRef.current = stop;
+    return stop;
+  };
+
+  const stopSlotSpinLoop = () => {
+    if (slotSpinStopRef.current) {
+      slotSpinStopRef.current();
+      slotSpinStopRef.current = null;
+    }
+  };
+
   return {
     playSadBlip,
     playCountdownBeep,
@@ -219,5 +276,7 @@ export function useAudioCue() {
     playSlotResolve,
     playJokerSparkle,
     playBoing,
+    startSlotSpinLoop,
+    stopSlotSpinLoop,
   };
 }

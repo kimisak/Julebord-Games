@@ -38,6 +38,8 @@ export default function GameBoardPage() {
     playSlotResolve,
     playJokerSparkle,
     playBoing,
+    startSlotSpinLoop,
+    stopSlotSpinLoop,
   } = useAudioCue();
   const [teams, setTeams] = usePersistentState<Team[]>(TEAM_STORAGE_KEY, []);
   const [questions, setQuestions] = usePersistentState<Question[]>(
@@ -87,6 +89,7 @@ export default function GameBoardPage() {
   const [slotCollapsed, setSlotCollapsed] = useState(false);
   const [slotJumpId, setSlotJumpId] = useState<string | null>(null);
   const [slotJumpKey, setSlotJumpKey] = useState<number>(0);
+  const slotSpinStopRef = useRef<(() => void) | null>(null);
 
   useEffect(() => {
     setTeams((prev) => (prev.length === 0 ? buildDefaultTeams() : prev));
@@ -201,6 +204,10 @@ export default function GameBoardPage() {
       if (slotTimeoutRef.current) {
         clearTimeout(slotTimeoutRef.current);
       }
+      if (slotSpinStopRef.current) {
+        slotSpinStopRef.current();
+        slotSpinStopRef.current = null;
+      }
     };
   }, []);
 
@@ -208,6 +215,11 @@ export default function GameBoardPage() {
     if (teams.length === 0 || slotSpinning) return;
     setSlotSpinning(true);
     setSlotCollapsed(false);
+    if (slotSpinStopRef.current) {
+      slotSpinStopRef.current();
+      slotSpinStopRef.current = null;
+    }
+    slotSpinStopRef.current = startSlotSpinLoop();
     const spinDuration = 1800 + Math.random() * 600;
     const tick = setInterval(() => {
       setSlotFaces((prev) => {
@@ -232,6 +244,12 @@ export default function GameBoardPage() {
       setSlotFaces(orderedTeams.slice(0, Math.min(3, orderedTeams.length)));
       setSlotSpinning(false);
       setSlotCollapsed(true);
+      if (slotSpinStopRef.current) {
+        slotSpinStopRef.current();
+        slotSpinStopRef.current = null;
+      } else {
+        stopSlotSpinLoop();
+      }
       playSlotResolve();
       slotTimeoutRef.current = null;
     }, spinDuration);
