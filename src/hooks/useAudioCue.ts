@@ -248,10 +248,10 @@ export function useAudioCue() {
       if (stopped) return;
       stopped = true;
       const t = ctx.currentTime;
-      gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.25);
-      osc1.stop(t + 0.3);
-      osc2.stop(t + 0.3);
-      lfo.stop(t + 0.3);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.18);
+      osc1.stop(t + 0.24);
+      osc2.stop(t + 0.24);
+      lfo.stop(t + 0.24);
       slotSpinStopRef.current = null;
     };
 
