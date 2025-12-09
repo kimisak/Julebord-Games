@@ -37,6 +37,7 @@ export default function GameBoardPage() {
     playBigWin,
     playSlotResolve,
     playJokerSparkle,
+    playBoing,
   } = useAudioCue();
   const [teams, setTeams] = usePersistentState<Team[]>(TEAM_STORAGE_KEY, []);
   const [questions, setQuestions] = usePersistentState<Question[]>(
@@ -84,6 +85,8 @@ export default function GameBoardPage() {
   const slotIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const slotTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [slotCollapsed, setSlotCollapsed] = useState(false);
+  const [slotJumpId, setSlotJumpId] = useState<string | null>(null);
+  const [slotJumpKey, setSlotJumpKey] = useState<number>(0);
 
   useEffect(() => {
     setTeams((prev) => (prev.length === 0 ? buildDefaultTeams() : prev));
@@ -1025,6 +1028,13 @@ export default function GameBoardPage() {
         {`@keyframes slot-shimmer {
             0% { transform: translateY(-110%); }
             100% { transform: translateY(110%); }
+          }
+          @keyframes slot-jump {
+            0% { transform: translateY(0) scale(1); }
+            25% { transform: translateY(-12px) scale(1.05); }
+            50% { transform: translateY(0px) scale(1); }
+            75% { transform: translateY(-6px) scale(1.02); }
+            100% { transform: translateY(0) scale(1); }
           }`}
       </style>
       <section className="card" style={{ padding: "18px" }}>
@@ -1123,6 +1133,8 @@ export default function GameBoardPage() {
                         const transformValue = slotSpinning
                           ? `translateY(${bob}) scale(${scaleSpin})`
                           : `scale(${scaleRest})`;
+                        const canJump = !slotSpinning && activeTurnOrder.length === 0;
+                        const isJumping = slotJumpId && slotJumpId === team?.id;
                         return (
                         <div
                           key={team?.id ?? `slot-${idx}`}
@@ -1151,7 +1163,14 @@ export default function GameBoardPage() {
                             transform: transformValue,
                             outline: isActive && !slotSpinning ? `2px solid ${team?.accentBase ?? "rgba(255,255,255,0.25)"}` : "none",
                             outlineOffset: "2px",
-                            cursor: "pointer",
+                            cursor: canJump ? "pointer" : "default",
+                          }}
+                          onClick={() => {
+                            if (!canJump || !team?.id) return;
+                            setSlotJumpId(team.id);
+                            setSlotJumpKey(Date.now());
+                            setTimeout(() => setSlotJumpId(null), 650);
+                            playBoing();
                           }}
                         >
                           <div
@@ -1167,7 +1186,20 @@ export default function GameBoardPage() {
                             }}
                             aria-hidden
                           />
-                          <div style={{ fontSize: isActive && !slotSpinning ? "26px" : "22px", marginTop: "2px" }}>{team?.badgeEmoji ?? "❔"}</div>
+                          <div
+                            key={isJumping && canJump ? slotJumpKey : `emoji-${team?.id ?? idx}`}
+                            style={{
+                              fontSize: isActive && !slotSpinning ? "26px" : "22px",
+                              marginTop: "2px",
+                              animation:
+                                isJumping && canJump
+                                  ? `slot-jump 0.65s ease-out`
+                                  : "none",
+                              willChange: "transform",
+                            }}
+                          >
+                            {team?.badgeEmoji ?? "❔"}
+                          </div>
                           <div
                             style={{
                               position: "absolute",

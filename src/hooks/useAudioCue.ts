@@ -188,6 +188,27 @@ export function useAudioCue() {
     osc2.stop(now + 0.6);
   };
 
+  const playBoing = () => {
+    const ctx = ensureCtx();
+    if (!ctx) return;
+    const now = ctx.currentTime;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = "sine";
+    osc.frequency.setValueAtTime(180, now);
+    osc.frequency.exponentialRampToValueAtTime(420, now + 0.25);
+    gain.gain.setValueAtTime(0.28, now);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.35);
+    const filter = ctx.createBiquadFilter();
+    filter.type = "lowpass";
+    filter.frequency.setValueAtTime(1400, now);
+    osc.connect(filter);
+    filter.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start(now);
+    osc.stop(now + 0.36);
+  };
+
   return {
     playSadBlip,
     playCountdownBeep,
@@ -197,5 +218,6 @@ export function useAudioCue() {
     playBigWin,
     playSlotResolve,
     playJokerSparkle,
+    playBoing,
   };
 }
