@@ -1669,11 +1669,8 @@ const TimelineFields = React.memo(function TimelineFields({
                         marginBottom: "8px",
                       }}
                     >
-                      <div style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap" }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap" }}>
                         <div style={{ fontWeight: 700 }}>{points} pts</div>
-                        <div style={{ color: "var(--muted)", fontWeight: 700, fontSize: "0.9rem" }}>
-                          Drag to reorder
-                        </div>
                       </div>
                       <div style={{ display: "flex", alignItems: "center", gap: "8px", justifyContent: "flex-end" }}>
                         {q?.answered && (
